@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # ============================================================
-# 2. 은하수 배경 & 코스믹 판타지 CSS
+# 2. 레이어 최적화 은하수 배경 & 코스믹 판타지 CSS
 # ============================================================
 
 st.markdown("""
@@ -26,28 +26,32 @@ st.markdown("""
         display: none !important;
     }
 
-    /* 은하수 배경 연출 */
+    /* 은하수 배경 설정 */
     .stApp {
         background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%) !important;
         background-attachment: fixed !important;
         color: #ffffff !important;
         font-family: 'Noto Sans KR', sans-serif;
-        position: relative;
-        overflow-x: hidden;
     }
 
-    /* 은하수 빛무리 애니메이션 레이어 */
+    /* 은하수 빛무리를 가상 요소가 아닌 별도 레이어로 위치 지정 */
     .stApp::before {
         content: "";
         position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
+        top: 0; left: 0; width: 100vw; height: 100vh;
         background: 
-            radial-gradient(circle at 20% 30%, rgba(255, 0, 127, 0.15) 0%, transparent 40%),
-            radial-gradient(circle at 80% 70%, rgba(0, 255, 255, 0.18) 0%, transparent 45%),
-            radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.12) 0%, transparent 60%);
-        pointer-events: none;
-        z-index: 0;
+            radial-gradient(circle at 20% 30%, rgba(255, 0, 127, 0.2) 0%, transparent 40%),
+            radial-gradient(circle at 80% 70%, rgba(0, 255, 255, 0.22) 0%, transparent 45%),
+            radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.15) 0%, transparent 60%);
+        pointer-events: none !important;
+        z-index: -1 !important;
         animation: galaxyMove 20s ease-in-out infinite alternate;
+    }
+
+    /* 콘텐츠 메인 블록이 배경 위에 위치하도록 보장 */
+    [data-testid="stMainBlockContainer"] {
+        position: relative;
+        z-index: 1 !important;
     }
 
     @keyframes galaxyMove {
@@ -83,9 +87,9 @@ st.markdown("""
         text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
     }
 
-    /* 클릭 창 (이전 표준 크기로 원복) */
+    /* 클릭 창 (표준 크기) */
     .standard-energy-card {
-        background: rgba(12, 4, 28, 0.82);
+        background: rgba(12, 4, 28, 0.88);
         border: 3px solid #00ffff;
         border-radius: 24px;
         padding: 2rem 1.5rem;
@@ -93,7 +97,7 @@ st.markdown("""
         margin: 1.2rem 0 1.8rem 0;
         box-shadow: 0 0 35px rgba(255, 0, 127, 0.6), inset 0 0 25px rgba(0, 255, 255, 0.3);
         backdrop-filter: blur(12px);
-        min-height: 260px;
+        min-height: 240px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -107,11 +111,11 @@ st.markdown("""
     }
 
     .energy-label-tag {
-        font-size: 0.95rem;
+        font-size: 1rem;
         color: #88ccff !important;
         letter-spacing: 2px;
-        text-transform: uppercase;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.8rem;
+        font-weight: 700;
     }
 
     .energy-level-name {
@@ -120,10 +124,9 @@ st.markdown("""
         font-weight: 900;
         color: #ff3399 !important;
         text-shadow: 0 0 16px #ff007f, 0 0 30px #00ffff;
-        margin-bottom: 0.8rem;
     }
 
-    /* 텍스트 없는 무대의 연출 */
+    /* 이펙트 오비트 무대 */
     .epic-stage {
         display: flex;
         align-items: center;
