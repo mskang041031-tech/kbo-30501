@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # ============================================================
-# 2. 대형 클릭 창 & 코스믹 판타지 CSS
+# 2. 은하수 배경 & 코스믹 판타지 CSS
 # ============================================================
 
 st.markdown("""
@@ -26,11 +26,33 @@ st.markdown("""
         display: none !important;
     }
 
+    /* 은하수 배경 연출 */
     .stApp {
-        background: linear-gradient(135deg, #05000c 0%, #120024 25%, #220042 50%, #0d0026 75%, #020008 100%) !important;
+        background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%) !important;
         background-attachment: fixed !important;
         color: #ffffff !important;
         font-family: 'Noto Sans KR', sans-serif;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* 은하수 빛무리 애니메이션 레이어 */
+    .stApp::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: 
+            radial-gradient(circle at 20% 30%, rgba(255, 0, 127, 0.15) 0%, transparent 40%),
+            radial-gradient(circle at 80% 70%, rgba(0, 255, 255, 0.18) 0%, transparent 45%),
+            radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.12) 0%, transparent 60%);
+        pointer-events: none;
+        z-index: 0;
+        animation: galaxyMove 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes galaxyMove {
+        0% { transform: scale(1) rotate(0deg); }
+        100% { transform: scale(1.15) rotate(3deg); }
     }
 
     p, span, label, div {
@@ -40,7 +62,7 @@ st.markdown("""
 
     .fantasy-title {
         font-family: 'Cinzel Decorative', 'Noto Sans KR', cursive, serif;
-        font-size: 3.4rem !important;
+        font-size: 3.2rem !important;
         font-weight: 900;
         text-align: center;
         letter-spacing: 2px;
@@ -53,7 +75,7 @@ st.markdown("""
 
     .fantasy-subtitle {
         text-align: center;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         color: #00ffff !important;
         font-weight: 700;
         margin-bottom: 1.5rem;
@@ -61,17 +83,17 @@ st.markdown("""
         text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
     }
 
-    /* 대폭 확장된 초대형 우주의 기운 통합 카드 */
-    .mega-energy-card {
-        background: rgba(12, 4, 28, 0.88);
-        border: 4px solid #00ffff;
-        border-radius: 32px;
-        padding: 3.5rem 2.5rem;
+    /* 클릭 창 (이전 표준 크기로 원복) */
+    .standard-energy-card {
+        background: rgba(12, 4, 28, 0.82);
+        border: 3px solid #00ffff;
+        border-radius: 24px;
+        padding: 2rem 1.5rem;
         text-align: center;
-        margin: 1.5rem 0 2.5rem 0;
-        box-shadow: 0 0 50px rgba(255, 0, 127, 0.7), inset 0 0 35px rgba(0, 255, 255, 0.4);
-        backdrop-filter: blur(18px);
-        min-height: 540px;
+        margin: 1.2rem 0 1.8rem 0;
+        box-shadow: 0 0 35px rgba(255, 0, 127, 0.6), inset 0 0 25px rgba(0, 255, 255, 0.3);
+        backdrop-filter: blur(12px);
+        min-height: 260px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -79,26 +101,34 @@ st.markdown("""
         transition: all 0.3s ease;
     }
 
-    .mega-energy-card:hover {
-        box-shadow: 0 0 70px rgba(0, 255, 255, 0.9), inset 0 0 45px rgba(255, 0, 127, 0.6);
+    .standard-energy-card:hover {
+        box-shadow: 0 0 50px rgba(0, 255, 255, 0.85), inset 0 0 35px rgba(255, 0, 127, 0.5);
         border-color: #ff007f;
     }
 
-    .energy-level-title {
-        font-family: 'Cinzel Decorative', 'Noto Sans KR', sans-serif;
-        font-size: 2.5rem;
-        font-weight: 900;
-        color: #ff3399 !important;
-        text-shadow: 0 0 18px #ff007f, 0 0 35px #00ffff;
-        margin-bottom: 1rem;
+    .energy-label-tag {
+        font-size: 0.95rem;
+        color: #88ccff !important;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
     }
 
-    /* 텍스트 없는 무대의 광폭 연출 */
+    .energy-level-name {
+        font-family: 'Cinzel Decorative', 'Noto Sans KR', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: #ff3399 !important;
+        text-shadow: 0 0 16px #ff007f, 0 0 30px #00ffff;
+        margin-bottom: 0.8rem;
+    }
+
+    /* 텍스트 없는 무대의 연출 */
     .epic-stage {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 4rem 1rem;
+        padding: 2.5rem 1rem;
         width: 100%;
         overflow: hidden;
         position: relative;
@@ -114,7 +144,7 @@ st.markdown("""
     .shockwave-ring {
         position: absolute;
         border-radius: 50%;
-        border: 4px solid rgba(0, 255, 255, 0.8);
+        border: 3px solid rgba(0, 255, 255, 0.8);
         animation: shockwave 0.8s infinite ease-out;
     }
 
@@ -130,7 +160,7 @@ st.markdown("""
 
     @keyframes shockwave {
         0% { transform: scale(0.4); opacity: 1; }
-        100% { transform: scale(2.5); opacity: 0; }
+        100% { transform: scale(2.2); opacity: 0; }
     }
 
     [data-testid="stMetricValue"] {
@@ -160,7 +190,7 @@ components.html("""
     const parentDoc = window.parent.document;
     
     function attachHoverListeners() {
-        const card = parentDoc.querySelector('.mega-energy-card');
+        const card = parentDoc.querySelector('.standard-energy-card');
         if (card) {
             card.addEventListener('mouseenter', () => {
                 parentDoc.isHoveringMegaCard = true;
@@ -180,22 +210,22 @@ components.html("""
 # ============================================================
 
 COSMIC_LEVELS = [
-    {"level": 1,  "clicks": 0,   "title": "🌱 티끌 같은 미풍의 기운", "desc": "미약한 차원의 울림이 감지됩니다."},
-    {"level": 2,  "clicks": 10,  "title": "🍃 대기권 바람의 기운", "desc": "대기의 파동이 야구장을 감쌉니다."},
-    {"level": 3,  "clicks": 25,  "title": "💧 심해 이슬의 기운", "desc": "깊은 정적이 승리의 응축을 준비합니다."},
-    {"level": 4,  "clicks": 45,  "title": "🪨 대지 공명의 기운", "desc": "그라운드 지각 아래 거대한 기운이 꿈틀거립니다."},
-    {"level": 5,  "clicks": 70,  "title": "🔥 마그마 전열의 기운", "desc": "뜨거운 승부욕이 구단 전체를 감쌉니다."},
-    {"level": 6,  "clicks": 100, "title": "🌙 인력 달빛의 기운", "desc": "달의 중력이 승리의 궤적을 끌어당깁니다."},
-    {"level": 7,  "clicks": 135, "title": "☀️ 태양 플레어의 기운", "desc": "강렬한 수소 폭발의 열기가 승운을 불태웁니다."},
-    {"level": 8,  "clicks": 175, "title": "🪐 행성 직렬의 정렬", "desc": "수성·금성·화성이 완벽한 직렬을 이룹니다."},
-    {"level": 9,  "clicks": 220, "title": "⭐ 성좌 별자리의 공명", "desc": "천상의 별자리들이 승리의 좌표를 찍습니다."},
-    {"level": 10, "clicks": 270, "title": "☄️ 유성우 폭풍의 파동", "desc": "하늘에서 쏟아지는 유성이 홈런을 그립니다."},
-    {"level": 11, "clicks": 320, "title": "🌌 발광 성운의 집속", "desc": "아름다운 성운 가스가 전력을 극대화합니다."},
-    {"level": 12, "clicks": 370, "title": "🌠 초신성 폭발의 기운", "desc": "한 해를 뒤흔들 초신성의 파동이 분출됩니다."},
-    {"level": 13, "clicks": 410, "title": "💫 소용돌이 은하의 기운", "desc": "거대한 은하수가 구단의 운명을 소용돌이칩니다."},
-    {"level": 14, "clicks": 440, "title": "🕳️ 블랙홀 중력의 파형", "desc": "상대 팀의 승운을 모조리 흡수하는 중력장입니다."},
-    {"level": 15, "clicks": 470, "title": "👑 코스믹 엠페러의 지배", "desc": "우주의 질서를 새로 쓰는 절대자의 기운입니다."},
-    {"level": 16, "clicks": 500, "title": "💥 빅뱅(Big Bang) 창조주의 정점", "desc": "우주 창조급 신화! 완벽한 우승의 운명이 확정됩니다."}
+    {"level": 1,  "clicks": 0,   "title": "🌱 티끌 같은 미풍의 기운"},
+    {"level": 2,  "clicks": 10,  "title": "🍃 대기권 바람의 기운"},
+    {"level": 3,  "clicks": 25,  "title": "💧 심해 이슬의 기운"},
+    {"level": 4,  "clicks": 45,  "title": "🪨 대지 공명의 기운"},
+    {"level": 5,  "clicks": 70,  "title": "🔥 마그마 전열의 기운"},
+    {"level": 6,  "clicks": 100, "title": "🌙 인력 달빛의 기운"},
+    {"level": 7,  "clicks": 135, "title": "☀️ 태양 플레어의 기운"},
+    {"level": 8,  "clicks": 175, "title": "🪐 행성 직렬의 정렬"},
+    {"level": 9,  "clicks": 220, "title": "⭐ 성좌 별자리의 공명"},
+    {"level": 10, "clicks": 270, "title": "☄️ 유성우 폭풍의 파동"},
+    {"level": 11, "clicks": 320, "title": "🌌 발광 성운의 집속"},
+    {"level": 12, "clicks": 370, "title": "🌠 초신성 폭발의 기운"},
+    {"level": 13, "clicks": 410, "title": "💫 소용돌이 은하의 기운"},
+    {"level": 14, "clicks": 440, "title": "🕳️ 블랙홀 중력의 파형"},
+    {"level": 15, "clicks": 470, "title": "👑 코스믹 엠페러의 지배"},
+    {"level": 16, "clicks": 500, "title": "💥 빅뱅(Big Bang) 창조주의 정점"}
 ]
 
 # Session State 초기화
@@ -209,7 +239,7 @@ if "predict_result" not in st.session_state:
 if "is_hovered" not in st.session_state:
     st.session_state.is_hovered = True
 
-# 마우스 커서가 영역 내에 있을 때만 감쇠 (초당 8스택 감소)
+# 마우스 커서가 창 안에 있을 때만 감쇠 (초당 8스택 감소)
 time_passed = current_time - st.session_state.last_click_time
 if st.session_state.is_hovered and time_passed > 2.0 and st.session_state.click_count > 0:
     decay_amount = int((time_passed - 2.0) * 8)
@@ -305,7 +335,7 @@ def generate_season_rankings(year, target_team_name, cosmic_lvl):
     return teams_data
 
 # ============================================================
-# 6. 대형 클릭 창 & 예언 결과 통합 보드
+# 6. 클릭 창 & 예언 결과 통합 보드
 # ============================================================
 
 mega_card_placeholder = st.empty()
@@ -313,20 +343,19 @@ mega_card_placeholder = st.empty()
 # 클릭 창 (결과 출력이 없을 때)
 if st.session_state.predict_result is None:
     with mega_card_placeholder.container():
-        st.markdown('<div class="mega-energy-card">', unsafe_allow_html=True)
-        st.markdown(f'<div class="energy-level-title">{current_level_info["title"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<p style="color:#00ffff; font-size:1.7rem; font-weight:800; margin:15px 0;">현재 누적 클릭수: <b style="font-size:2.8rem; color:#ff007f;">{st.session_state.click_count}</b></p>', unsafe_allow_html=True)
-        st.markdown(f'<p style="color:#e0e0e0; font-size:1.15rem;">"{current_level_info["desc"]}"</p>', unsafe_allow_html=True)
+        st.markdown('<div class="standard-energy-card">', unsafe_allow_html=True)
+        st.markdown('<div class="energy-label-tag">적용된 우주의 기운</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="energy-level-name">{current_level_info["title"]}</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 btn_col1, btn_col2 = st.columns([2, 1])
 
 with btn_col1:
-    if st.button("⚡ 클릭하여 우주의 기운 모으기! (+1점)", use_container_width=True):
+    if st.button("⚡ 클릭하여 우주의 기운 모으기!", use_container_width=True):
         st.session_state.predict_result = None
         st.session_state.click_count = min(500, st.session_state.click_count + 1)
         st.session_state.last_click_time = time.time()
-        st.session_state.is_hovered = True  # 클릭 시 마우스가 창 안에 있는 것으로 간주
+        st.session_state.is_hovered = True
         st.rerun()
 
 with btn_col2:
@@ -339,7 +368,7 @@ with btn_col2:
 predict_button = st.button("🔮 모은 기운으로 미래 운명 예언받기", use_container_width=True)
 
 # ============================================================
-# 7. 단계별 이펙트 화려함 차등 연출 및 결과 출력
+# 7. 이펙트 차등 연출 및 예언 결과 출력
 # ============================================================
 
 if predict_button:
@@ -349,14 +378,14 @@ if predict_button:
 
     loading_seconds = max(3, min(10, int(2.5 + (cosmic_level * 0.5))))
 
-    # 클릭 창 내부 단계별(1~16) 화려함 차등 애니메이션
+    # 클릭 창 내부 단계별 이펙트 애니메이션
     for i in range(loading_seconds * 10):
-        base_size = 80 + (cosmic_level * 12)
+        base_size = 70 + (cosmic_level * 10)
         pulse = (i % 4) * (2 + cosmic_level // 2)
         size = base_size + pulse
 
-        glow_main = 18 + (cosmic_level * 6)
-        glow_outer = 35 + (cosmic_level * 12)
+        glow_main = 15 + (cosmic_level * 5)
+        glow_outer = 30 + (cosmic_level * 10)
 
         pulse_speed = max(0.1, 0.6 - (cosmic_level * 0.03))
         spin_speed = max(0.4, 2.5 - (cosmic_level * 0.12))
@@ -365,7 +394,7 @@ if predict_button:
         shockwave_speed = max(0.2, 1.0 - (cosmic_level * 0.05))
 
         mega_card_placeholder.markdown(f"""
-            <div class="mega-energy-card">
+            <div class="standard-energy-card">
                 <div class="epic-stage">
                     <div class="shockwave-ring" style="
                         width: {size}px;
@@ -400,10 +429,10 @@ if st.session_state.predict_result is not None:
     
     with mega_card_placeholder.container():
         st.markdown(f"""
-            <div class="mega-energy-card">
+            <div class="standard-energy-card">
                 <h2 style="margin:0; color:#00ffff; font-family:'Noto Sans KR'; font-weight:800;">🔮 {team['name']} - {res['year']} 시즌 최종 예언</h2>
-                <h1 style="font-size:3.8rem; margin: 25px 0; color:#00ffff; font-family:'Cinzel Decorative'; filter: drop-shadow(0 0 12px #ff007f);">최종 예상 순위: {team['rank']}위</h1>
-                <p style="font-size:1.45rem; font-weight:700; color:#ffffff;">{team['wins']}승 {team['draws']}무 {team['losses']}패 (승률 {team['win_rate']})</p>
+                <h1 style="font-size:3.2rem; margin: 15px 0; color:#00ffff; font-family:'Cinzel Decorative'; filter: drop-shadow(0 0 12px #ff007f);">최종 예상 순위: {team['rank']}위</h1>
+                <p style="font-size:1.3rem; font-weight:700; color:#ffffff;">{team['wins']}승 {team['draws']}무 {team['losses']}패 (승률 {team['win_rate']})</p>
             </div>
         """, unsafe_allow_html=True)
 
