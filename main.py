@@ -101,17 +101,13 @@ st.markdown("""
         position: relative;
         border-radius: 50%;
         background: radial-gradient(circle at 30% 30%, #ffffff, #ff00a0 35%, #00ffff 70%, #000000 100%);
-        box-shadow: 0 0 50px #ff007f, 0 0 100px #00ffff, inset 0 0 40px #ffffff;
         animation: hyperPulse 0.4s infinite alternate, hyperSpin 2s linear infinite;
     }
 
     .shockwave-ring {
         position: absolute;
-        width: 100%;
-        height: 100%;
         border-radius: 50%;
         border: 4px solid rgba(0, 255, 255, 0.8);
-        box-shadow: 0 0 30px #00ffff;
         animation: shockwave 0.8s infinite ease-out;
     }
 
@@ -126,8 +122,8 @@ st.markdown("""
     }
 
     @keyframes shockwave {
-        0% { transform: scale(0.6); opacity: 1; }
-        100% { transform: scale(2.2); opacity: 0; }
+        0% { transform: scale(0.4); opacity: 1; }
+        100% { transform: scale(2.5); opacity: 0; }
     }
 
     [data-testid="stMetricValue"] {
@@ -152,26 +148,26 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================================
-# 3. 우주의 기운 16단계 (최종 1000 스택)
+# 3. 우주의 기운 16단계 (500 스택 기준)
 # ============================================================
 
 COSMIC_LEVELS = [
-    {"level": 1,  "clicks": 0,    "title": "🌱 티끌 같은 미풍의 기운", "desc": "미약한 차원의 울림이 감지됩니다."},
-    {"level": 2,  "clicks": 20,   "title": "🍃 대기권 바람의 기운", "desc": "대기의 파동이 야구장을 감쌉니다."},
-    {"level": 3,  "clicks": 50,   "title": "💧 심해 이슬의 기운", "desc": "깊은 정적이 승리의 응축을 준비합니다."},
-    {"level": 4,  "clicks": 90,   "title": "🪨 대지 공명의 기운", "desc": "그라운드 지각 아래 거대한 기운이 꿈틀거립니다."},
-    {"level": 5,  "clicks": 140,  "title": "🔥 마그마 전열의 기운", "desc": "뜨거운 승부욕이 구단 전체를 감쌉니다."},
-    {"level": 6,  "clicks": 200,  "title": "🌙 인력 달빛의 기운", "desc": "달의 중력이 승리의 궤적을 끌어당깁니다."},
-    {"level": 7,  "clicks": 270,  "title": "☀️ 태양 플레어의 기운", "desc": "강렬한 수소 폭발의 열기가 승운을 불태웁니다."},
-    {"level": 8,  "clicks": 350,  "title": "🪐 행성 직렬의 정렬", "desc": "수성·금성·화성이 완벽한 직렬을 이룹니다."},
-    {"level": 9,  "clicks": 440,  "title": "⭐ 성좌 별자리의 공명", "desc": "천상의 별자리들이 승리의 좌표를 찍습니다."},
-    {"level": 10, "clicks": 540,  "title": "☄️ 유성우 폭풍의 파동", "desc": "하늘에서 쏟아지는 유성이 홈런을 그립니다."},
-    {"level": 11, "clicks": 640,  "title": "🌌 발광 성운의 집속", "desc": "아름다운 성운 가스가 전력을 극대화합니다."},
-    {"level": 12, "clicks": 740,  "title": "🌠 초신성 폭발의 기운", "desc": "한 해를 뒤흔들 초신성의 파동이 분출됩니다."},
-    {"level": 13, "clicks": 820,  "title": "💫 소용돌이 은하의 기운", "desc": "거대한 은하수가 구단의 운명을 소용돌이칩니다."},
-    {"level": 14, "clicks": 890,  "title": "🕳️ 블랙홀 중력의 파형", "desc": "상대 팀의 승운을 모조리 흡수하는 중력장입니다."},
-    {"level": 15, "clicks": 950,  "title": "👑 코스믹 엠페러의 지배", "desc": "우주의 질서를 새로 쓰는 절대자의 기운입니다."},
-    {"level": 16, "clicks": 1000, "title": "💥 빅뱅(Big Bang) 창조주의 정점", "desc": "우주 창조급 신화! 완벽한 우승의 운명이 확정됩니다."}
+    {"level": 1,  "clicks": 0,   "title": "🌱 티끌 같은 미풍의 기운", "desc": "미약한 차원의 울림이 감지됩니다."},
+    {"level": 2,  "clicks": 10,  "title": "🍃 대기권 바람의 기운", "desc": "대기의 파동이 야구장을 감쌉니다."},
+    {"level": 3,  "clicks": 25,  "title": "💧 심해 이슬의 기운", "desc": "깊은 정적이 승리의 응축을 준비합니다."},
+    {"level": 4,  "clicks": 45,  "title": "🪨 대지 공명의 기운", "desc": "그라운드 지각 아래 거대한 기운이 꿈틀거립니다."},
+    {"level": 5,  "clicks": 70,  "title": "🔥 마그마 전열의 기운", "desc": "뜨거운 승부욕이 구단 전체를 감쌉니다."},
+    {"level": 6,  "clicks": 100, "title": "🌙 인력 달빛의 기운", "desc": "달의 중력이 승리의 궤적을 끌어당깁니다."},
+    {"level": 7,  "clicks": 135, "title": "☀️ 태양 플레어의 기운", "desc": "강렬한 수소 폭발의 열기가 승운을 불태웁니다."},
+    {"level": 8,  "clicks": 175, "title": "🪐 행성 직렬의 정렬", "desc": "수성·금성·화성이 완벽한 직렬을 이룹니다."},
+    {"level": 9,  "clicks": 220, "title": "⭐ 성좌 별자리의 공명", "desc": "천상의 별자리들이 승리의 좌표를 찍습니다."},
+    {"level": 10, "clicks": 270, "title": "☄️ 유성우 폭풍의 파동", "desc": "하늘에서 쏟아지는 유성이 홈런을 그립니다."},
+    {"level": 11, "clicks": 320, "title": "🌌 발광 성운의 집속", "desc": "아름다운 성운 가스가 전력을 극대화합니다."},
+    {"level": 12, "clicks": 370, "title": "🌠 초신성 폭발의 기운", "desc": "한 해를 뒤흔들 초신성의 파동이 분출됩니다."},
+    {"level": 13, "clicks": 410, "title": "💫 소용돌이 은하의 기운", "desc": "거대한 은하수가 구단의 운명을 소용돌이칩니다."},
+    {"level": 14, "clicks": 440, "title": "🕳️ 블랙홀 중력의 파형", "desc": "상대 팀의 승운을 모조리 흡수하는 중력장입니다."},
+    {"level": 15, "clicks": 470, "title": "👑 코스믹 엠페러의 지배", "desc": "우주의 질서를 새로 쓰는 절대자의 기운입니다."},
+    {"level": 16, "clicks": 500, "title": "💥 빅뱅(Big Bang) 창조주의 정점", "desc": "우주 창조급 신화! 완벽한 우승의 운명이 확정됩니다."}
 ]
 
 # Session State 초기화
@@ -183,10 +179,10 @@ if "last_click_time" not in st.session_state:
 if "predict_result" not in st.session_state:
     st.session_state.predict_result = None
 
-# 2초 이상 방치 시 감소 로직 (초당 10스택 감쇠)
+# 2초 이상 방치 시 감쇠 로직 (초당 8스택 감소)
 time_passed = current_time - st.session_state.last_click_time
 if time_passed > 2.0 and st.session_state.click_count > 0:
-    decay_amount = int((time_passed - 2.0) * 10)
+    decay_amount = int((time_passed - 2.0) * 8)
     st.session_state.click_count = max(0, st.session_state.click_count - decay_amount)
     st.session_state.last_click_time = current_time
 
@@ -284,12 +280,12 @@ def generate_season_rankings(year, target_team_name, cosmic_lvl):
 
 mega_card_placeholder = st.empty()
 
-# 결과 출력이 없는 기본 상태일 경우 대형 클릭 창 표시
+# 클릭 창 (결과 출력이 없을 때) - 남은 클릭 수 및 우주의 기운 문구 제거
 if st.session_state.predict_result is None:
     with mega_card_placeholder.container():
         st.markdown('<div class="mega-energy-card">', unsafe_allow_html=True)
         st.markdown(f'<div class="energy-level-title">{current_level_info["title"]}</div>', unsafe_allow_html=True)
-        st.markdown(f'<p style="color:#00ffff; font-size:1.4rem; font-weight:800;">현재 누적 기운: <b style="font-size:2rem; color:#ff007f;">{st.session_state.click_count}</b> / 1000 (단계: {current_level_info["level"]} / 16)</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color:#00ffff; font-size:1.5rem; font-weight:800;">현재 누적 클릭수: <b style="font-size:2.4rem; color:#ff007f;">{st.session_state.click_count}</b></p>', unsafe_allow_html=True)
         st.markdown(f'<p style="color:#e0e0e0; font-size:1.05rem;">"{current_level_info["desc"]}"</p>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -297,8 +293,8 @@ btn_col1, btn_col2 = st.columns([2, 1])
 
 with btn_col1:
     if st.button("⚡ 클릭하여 우주의 기운 모으기! (+1점)", use_container_width=True):
-        st.session_state.predict_result = None  # 이전 결과 초기화
-        st.session_state.click_count = min(1000, st.session_state.click_count + 1)
+        st.session_state.predict_result = None  # 이전 예언 결과 리셋
+        st.session_state.click_count = min(500, st.session_state.click_count + 1)
         st.session_state.last_click_time = time.time()
         st.rerun()
 
@@ -312,7 +308,7 @@ with btn_col2:
 predict_button = st.button("🔮 모은 기운으로 미래 운명 예언받기", use_container_width=True)
 
 # ============================================================
-# 7. 예언 실행 및 클릭 창 내부 결과 출력
+# 7. 단계별 이펙트 화려함 차등 연출 및 결과 출력
 # ============================================================
 
 if predict_button:
@@ -322,32 +318,55 @@ if predict_button:
 
     loading_seconds = max(3, min(10, int(2.5 + (cosmic_level * 0.5))))
 
-    # 클릭 창 내부에서 번쩍이는 무대 연출
+    # 클릭 창 내부에서 단계(1~16)에 따른 화려함 차등 애니메이션 처리
     for i in range(loading_seconds * 10):
-        base_size = 120 + (cosmic_level * 7)
-        pulse = (i % 5) * 4
+        # 1. 크기 계산: 낮은 단계는 소형, 16단계는 매우 거대함
+        base_size = 70 + (cosmic_level * 10)
+        pulse = (i % 4) * (2 + cosmic_level // 2)
         size = base_size + pulse
+
+        # 2. 광채 & 후광 (Glow intensity) 차등
+        glow_main = 15 + (cosmic_level * 5)
+        glow_outer = 30 + (cosmic_level * 10)
+
+        # 3. 속도 및 색상 변환 (Pulse/Spin speed & Hue)
+        pulse_speed = max(0.1, 0.6 - (cosmic_level * 0.03))
+        spin_speed = max(0.4, 2.5 - (cosmic_level * 0.12))
+        hue_shift = (i * 20 * cosmic_level) % 360
+
+        # 4. 충격파 링 수 및 속도
+        shockwave_speed = max(0.2, 1.0 - (cosmic_level * 0.05))
 
         mega_card_placeholder.markdown(f"""
             <div class="mega-energy-card">
                 <div class="epic-stage">
-                    <div class="shockwave-ring" style="animation-duration: {max(0.2, 0.9 - cosmic_level * 0.04)}s;"></div>
-                    <div class="hyper-orb" style="width: {size}px; height: {size}px;"></div>
+                    <div class="shockwave-ring" style="
+                        width: {size}px;
+                        height: {size}px;
+                        border-width: {2 + cosmic_level // 3}px;
+                        animation-duration: {shockwave_speed}s;
+                        box-shadow: 0 0 {glow_main}px #00ffff;
+                    "></div>
+                    <div class="hyper-orb" style="
+                        width: {size}px;
+                        height: {size}px;
+                        box-shadow: 0 0 {glow_main}px #ff007f, 0 0 {glow_outer}px #00ffff, inset 0 0 {glow_main}px #ffffff;
+                        animation-duration: {pulse_speed}s, {spin_speed}s;
+                        filter: brightness({1.0 + cosmic_level * 0.1}) hue-rotate({hue_shift}deg);
+                    "></div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
         time.sleep(0.1)
 
-    # 예언 데이터 결과를 세션 상태에 저장하여 대형 창 내부에 고정 출력
     st.session_state.predict_result = {
         "team": team,
         "year": selected_year,
-        "level_title": current_level_info["title"],
         "level": cosmic_level
     }
     st.rerun()
 
-# 저장된 결과가 있을 경우 클릭 창 내부를 예언 리포트로 교체
+# 저장된 예언 결과가 있을 경우 (적용된 우주의 기운 문구 제외)
 if st.session_state.predict_result is not None:
     res = st.session_state.predict_result
     team = res["team"]
@@ -356,8 +375,7 @@ if st.session_state.predict_result is not None:
         st.markdown(f"""
             <div class="mega-energy-card">
                 <h2 style="margin:0; color:#00ffff; font-family:'Noto Sans KR'; font-weight:800;">🔮 {team['name']} - {res['year']} 시즌 최종 예언</h2>
-                <p style="font-size:1.15rem; opacity:0.95; margin-top:8px; color:#ffffff;">적용된 우주의 기운: <b style="color:#ff007f; font-size:1.3rem;">{res['level_title']}</b> (단계 {res['level']})</p>
-                <h1 style="font-size:3.5rem; margin: 15px 0; color:#00ffff; font-family:'Cinzel Decorative'; filter: drop-shadow(0 0 10px #ff007f);">최종 예상 순위: {team['rank']}위</h1>
+                <h1 style="font-size:3.5rem; margin: 20px 0; color:#00ffff; font-family:'Cinzel Decorative'; filter: drop-shadow(0 0 10px #ff007f);">최종 예상 순위: {team['rank']}위</h1>
                 <p style="font-size:1.35rem; font-weight:700; color:#ffffff;">{team['wins']}승 {team['draws']}무 {team['losses']}패 (승률 {team['win_rate']})</p>
             </div>
         """, unsafe_allow_html=True)
@@ -388,4 +406,3 @@ if st.session_state.predict_result is not None:
             st.warning("⚡ 치열한 가을야구 경계선에서 운명이 뜨겁게 요동치고 있습니다.")
         else:
             st.error("🌌 이번 시즌은 우주의 기운이 부족하여 다음을 기약해야 합니다.")
-            
