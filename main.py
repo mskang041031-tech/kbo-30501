@@ -34,7 +34,6 @@ st.markdown("""
         font-family: 'Noto Sans KR', sans-serif;
     }
 
-    /* 은하수 빛무리를 가상 요소가 아닌 별도 레이어로 위치 지정 */
     .stApp::before {
         content: "";
         position: fixed;
@@ -48,7 +47,6 @@ st.markdown("""
         animation: galaxyMove 20s ease-in-out infinite alternate;
     }
 
-    /* 콘텐츠 메인 블록이 배경 위에 위치하도록 보장 */
     [data-testid="stMainBlockContainer"] {
         position: relative;
         z-index: 1 !important;
@@ -187,27 +185,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# JavaScript: 클릭 창 마우스 오버 감지
-components.html("""
-    <script>
-    const parentDoc = window.parent.document;
-    
-    function attachHoverListeners() {
-        const card = parentDoc.querySelector('.standard-energy-card');
-        if (card) {
-            card.addEventListener('mouseenter', () => {
-                parentDoc.isHoveringMegaCard = true;
-            });
-            card.addEventListener('mouseleave', () => {
-                parentDoc.isHoveringMegaCard = false;
-            });
-        }
-    }
-    
-    setTimeout(attachHoverListeners, 500);
-    </script>
-""", height=0)
-
 # ============================================================
 # 3. 우주의 기운 16단계 (500 스택 기준)
 # ============================================================
@@ -231,7 +208,7 @@ COSMIC_LEVELS = [
     {"level": 16, "clicks": 500, "title": "💥 빅뱅(Big Bang) 창조주의 정점"}
 ]
 
-# Session State 초기화
+# Session State 안전한 초기화
 current_time = time.time()
 if "click_count" not in st.session_state:
     st.session_state.click_count = 0
@@ -239,13 +216,11 @@ if "last_click_time" not in st.session_state:
     st.session_state.last_click_time = current_time
 if "predict_result" not in st.session_state:
     st.session_state.predict_result = None
-if "is_hovered" not in st.session_state:
-    st.session_state.is_hovered = True
 
-# 마우스 커서가 창 안에 있을 때만 감쇠 (초당 8스택 감소)
+# [개선된 감쇠 로직] 마지막 클릭 후 2.5초 이상 방치 시 차감
 time_passed = current_time - st.session_state.last_click_time
-if st.session_state.is_hovered and time_passed > 2.0 and st.session_state.click_count > 0:
-    decay_amount = int((time_passed - 2.0) * 8)
+if time_passed > 2.5 and st.session_state.click_count > 0:
+    decay_amount = int((time_passed - 2.5) * 6)
     st.session_state.click_count = max(0, st.session_state.click_count - decay_amount)
     st.session_state.last_click_time = current_time
 
@@ -346,10 +321,12 @@ mega_card_placeholder = st.empty()
 # 클릭 창 (결과 출력이 없을 때)
 if st.session_state.predict_result is None:
     with mega_card_placeholder.container():
-        st.markdown('<div class="standard-energy-card">', unsafe_allow_html=True)
-        st.markdown('<div class="energy-label-tag">적용된 우주의 기운</div>', unsafe_allow_html=True)
-        st.markdown(f'<div class="energy-level-name">{current_level_info["title"]}</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(f"""
+            <div class="standard-energy-card">
+                <div class="energy-label-tag">적용된 우주의 기운 ({st.session_state.click_count} 스택)</div>
+                <div class="energy-level-name">{current_level_info["title"]}</div>
+            </div>
+        """, unsafe_allow_html=True)
 
 btn_col1, btn_col2 = st.columns([2, 1])
 
@@ -358,7 +335,6 @@ with btn_col1:
         st.session_state.predict_result = None
         st.session_state.click_count = min(500, st.session_state.click_count + 1)
         st.session_state.last_click_time = time.time()
-        st.session_state.is_hovered = True
         st.rerun()
 
 with btn_col2:
@@ -379,20 +355,20 @@ if predict_button:
     current_teams = generate_season_rankings(selected_year, selected_team_name, cosmic_level)
     team = current_teams[selected_team_name]
 
-    loading_seconds = max(3, min(10, int(2.5 + (cosmic_level * 0.5))))
+    # 로딩 애니메이션 프레임 축소 (UI 병목 해소)
+    loading_seconds = max(2, min(5, int(1.5 + (cosmic_level * 0.25))))
 
-    # 클릭 창 내부 단계별 이펙트 애니메이션
-    for i in range(loading_seconds * 10):
-        base_size = 70 + (cosmic_level * 10)
+    for i in range(loading_seconds * 5):
+        base_size = 70 + (cosmic_level * 8)
         pulse = (i % 4) * (2 + cosmic_level // 2)
         size = base_size + pulse
 
-        glow_main = 15 + (cosmic_level * 5)
-        glow_outer = 30 + (cosmic_level * 10)
+        glow_main = 15 + (cosmic_level * 4)
+        glow_outer = 30 + (cosmic_level * 8)
 
         pulse_speed = max(0.1, 0.6 - (cosmic_level * 0.03))
         spin_speed = max(0.4, 2.5 - (cosmic_level * 0.12))
-        hue_shift = (i * 20 * cosmic_level) % 360
+        hue_shift = (i * 30 * cosmic_level) % 360
 
         shockwave_speed = max(0.2, 1.0 - (cosmic_level * 0.05))
 
@@ -416,7 +392,7 @@ if predict_button:
                 </div>
             </div>
         """, unsafe_allow_html=True)
-        time.sleep(0.1)
+        time.sleep(0.15)
 
     st.session_state.predict_result = {
         "team": team,
