@@ -258,7 +258,7 @@ def get_current_cosmic_level(clicks):
 current_level_info = get_current_cosmic_level(st.session_state.click_count)
 
 # ============================================================
-# 5. 메인 브라우저 DOM 주입형 최적화 파티클 엔진
+# 5. 메인 브라우저 DOM 주입형 방사형 파티클 엔진 (중심 폭발)
 # ============================================================
 
 if st.session_state.is_fever:
@@ -270,7 +270,7 @@ if st.session_state.is_fever:
             let oldCanvas = doc.getElementById('fever-particles');
             if (oldCanvas) oldCanvas.remove();
 
-            // 부모 창 최상단에 캔버스 생성
+            // 최상단 캔버스 생성
             const canvas = doc.createElement('canvas');
             canvas.id = 'fever-particles';
             canvas.style.position = 'fixed';
@@ -292,22 +292,37 @@ if st.session_state.is_fever:
             window.parent.addEventListener('resize', resize);
 
             const particles = [];
-            const particleCount = 60;
+            const particleCount = 85;
 
-            class Spark {
+            class SharpParticle {
                 constructor() {
                     this.reset();
                 }
 
                 reset() {
-                    this.x = Math.random() * canvas.width;
-                    this.y = canvas.height + 10;
-                    this.vx = (Math.random() - 0.5) * 8;
-                    this.vy = -(Math.random() * 14 + 10);
-                    this.size = Math.random() * 5 + 3;
+                    // 화면 중앙 기준점 설정
+                    this.centerX = canvas.width / 2;
+                    this.centerY = canvas.height / 2;
+                    
+                    this.x = this.centerX;
+                    this.y = this.centerY;
+
+                    // 360도 무작위 앙상블 방향각
+                    this.angle = Math.random() * Math.PI * 2;
+                    
+                    // 폭발적 가속도
+                    this.speed = Math.random() * 20 + 8;
+                    this.vx = Math.cos(this.angle) * this.speed;
+                    this.vy = Math.sin(this.angle) * this.speed;
+
+                    // 길쭉하고 날카로운 지오메트리
+                    this.length = Math.random() * 35 + 20; 
+                    this.width = Math.random() * 3 + 1.5;   
+
                     this.alpha = 1;
-                    this.decay = Math.random() * 0.025 + 0.015;
-                    const colors = ['#ffffff', '#ffff80', '#ffaa00', '#ff3300'];
+                    this.decay = Math.random() * 0.03 + 0.015;
+
+                    const colors = ['#ffffff', '#ffea00', '#ff5500', '#ff0055', '#00e5ff'];
                     this.color = colors[Math.floor(Math.random() * colors.length)];
                 }
 
@@ -315,7 +330,10 @@ if st.session_state.is_fever:
                     this.x += this.vx;
                     this.y += this.vy;
                     this.alpha -= this.decay;
-                    if (this.alpha <= 0 || this.y < -20) {
+
+                    if (this.alpha <= 0 || 
+                        this.x < 0 || this.x > canvas.width || 
+                        this.y < 0 || this.y > canvas.height) {
                         this.reset();
                     }
                 }
@@ -323,18 +341,28 @@ if st.session_state.is_fever:
                 draw() {
                     ctx.save();
                     ctx.globalAlpha = Math.max(0, this.alpha);
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                     ctx.fillStyle = this.color;
-                    ctx.shadowBlur = 12;
+                    ctx.shadowBlur = 15;
                     ctx.shadowColor = this.color;
+
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.angle);
+
+                    // 날카로운 화살촉/마름모 다각형
+                    ctx.beginPath();
+                    ctx.moveTo(this.length, 0);                 
+                    ctx.lineTo(0, -this.width);                 
+                    ctx.lineTo(-this.length * 0.3, 0);          
+                    ctx.lineTo(0, this.width);                  
+                    ctx.closePath();
                     ctx.fill();
+
                     ctx.restore();
                 }
             }
 
             for (let i = 0; i < particleCount; i++) {
-                particles.push(new Spark());
+                particles.push(new SharpParticle());
             }
 
             function animate() {
@@ -542,6 +570,6 @@ with st.expander("ℹ️ COSMIC PREDICT 알고리즘 및 기술 사양"):
     st.markdown("""
     * **개발 언어 및 프레임워크:** Python 3.10+, Streamlit, HTML5 Canvas
     * **핵심 수정 사항:**
-      * Streamlit의 iframe 크기 제한을 우회하는 `window.parent.document` 기반 최상단 Canvas 직접 주입 방식 적용
-      * 피버타임 진입 시 브라우저 화면 전체에서 화려하게 솟구치는 불꽃 파티클 가시성 100% 확보
+      * Streamlit의 iframe 제한을 우회하는 `window.parent.document` 기반 최상단 Canvas 직접 주입 방식 적용
+      * 피버타임 진입 시 화면 중앙에서 360도 전 방향으로 날카롭고 각진 광선 파티클이 튀어나오는 방사형 시각 효과 구현
     """)
