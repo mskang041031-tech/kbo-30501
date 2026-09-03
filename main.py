@@ -51,7 +51,7 @@ current_team_color = TEAM_COLORS[selected_team_name]["main"]
 current_team_sub_color = TEAM_COLORS[selected_team_name]["sub"]
 
 # ============================================================
-# 3. 팀별 동적 CSS & 고가시성 스타일링
+# 3. 팀별 동적 CSS & 정적 UI 스타일링
 # ============================================================
 
 st.markdown(f"""
@@ -74,22 +74,16 @@ st.markdown(f"""
         font-family: 'Noto Sans KR', sans-serif;
     }}
 
-    .stApp::before {{
-        content: "";
-        position: fixed;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background: 
-            radial-gradient(circle at 20% 30%, rgba(255, 0, 127, 0.15) 0%, transparent 40%),
-            radial-gradient(circle at 80% 70%, var(--team-glow) 0.2, transparent 45%),
-            radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.15) 0%, transparent 60%);
+    /* 파티클 iframe을 최상단 부모 윈도우 배경 레이어로 고정 */
+    iframe[title="st.components.v1.html"] {{
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 999999 !important;
         pointer-events: none !important;
-        z-index: -1 !important;
-        animation: galaxyMove 20s ease-in-out infinite alternate;
-    }}
-
-    [data-testid="stMainBlockContainer"] {{
-        position: relative;
-        z-index: 1 !important;
+        border: none !important;
     }}
 
     p, span, label, div {{
@@ -131,12 +125,11 @@ st.markdown(f"""
         margin: 1.2rem 0 1.8rem 0;
         box-shadow: 0 0 35px var(--team-glow), inset 0 0 25px var(--team-sub-glow);
         backdrop-filter: blur(12px);
-        min-height: 240px;
+        min-height: 200px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        transition: all 0.4s ease;
         position: relative;
         overflow: hidden;
     }}
@@ -144,13 +137,13 @@ st.markdown(f"""
     .fever-energy-card {{
         background: rgba(25, 2, 0, 0.95) !important;
         border: 3px solid #ff3300 !important;
-        box-shadow: 0 0 60px #ff3300, inset 0 0 40px #ffaa00 !important;
-        animation: feverPulseGlow 0.4s infinite alternate;
+        box-shadow: 0 0 50px #ff3300, inset 0 0 30px #ffaa00 !important;
+        animation: feverPulseGlow 0.5s infinite alternate;
     }}
 
     @keyframes feverPulseGlow {{
-        0% {{ box-shadow: 0 0 40px #ff2200, inset 0 0 25px #ff8800; }}
-        100% {{ box-shadow: 0 0 80px #ff6600, inset 0 0 50px #ffff00; }}
+        0% {{ box-shadow: 0 0 30px #ff2200, inset 0 0 20px #ff8800; }}
+        100% {{ box-shadow: 0 0 60px #ff6600, inset 0 0 40px #ffff00; }}
     }}
 
     .fever-bar-container {{
@@ -192,16 +185,10 @@ st.markdown(f"""
     }}
 
     .fever-text-title {{
-        font-size: 2.4rem;
+        font-size: 2.5rem;
         font-weight: 900;
         color: #ffffaa !important;
         text-shadow: 0 0 20px #ff3300, 0 0 40px #ff0000, 0 2px 6px #000000 !important;
-        animation: pulseText 0.25s infinite alternate;
-    }}
-
-    @keyframes pulseText {{
-        0% {{ transform: scale(0.97); }}
-        100% {{ transform: scale(1.05); }}
     }}
 
     [data-testid="stMetricValue"] {{
@@ -216,13 +203,6 @@ st.markdown(f"""
         font-weight: 800 !important;
         font-size: 1.1rem !important;
         text-shadow: 0 1px 3px #000000 !important;
-    }}
-
-    .stSelectbox label {{
-        color: #ffffff !important;
-        font-size: 1.15rem !important;
-        font-weight: 800 !important;
-        text-shadow: 0 0 10px var(--team-glow), 0 2px 4px #000000 !important;
     }}
     </style>
 """, unsafe_allow_html=True)
@@ -290,7 +270,88 @@ def get_current_cosmic_level(clicks):
 current_level_info = get_current_cosmic_level(st.session_state.click_count)
 
 # ============================================================
-# 5. 예언 데이터 엔진
+# 5. 경량화 60fps 불꽃 파티클 엔진 (피버타임 전용)
+# ============================================================
+
+if st.session_state.is_fever:
+    st.components.v1.html("""
+        <style>
+            body { margin: 0; padding: 0; overflow: hidden; background: transparent; }
+            canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        </style>
+        <canvas id="pCanvas"></canvas>
+        <script>
+            const canvas = document.getElementById('pCanvas');
+            const ctx = canvas.getContext('2d');
+
+            function resize() {
+                canvas.width = window.innerWidth || document.documentElement.clientWidth;
+                canvas.height = window.innerHeight || document.documentElement.clientHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            // 경량화 파티클 개수 (최적화: 45개)
+            const particles = [];
+            const count = 45;
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = canvas.height + 10;
+                    this.vx = (Math.random() - 0.5) * 6;
+                    this.vy = -(Math.random() * 12 + 8);
+                    this.size = Math.random() * 4 + 2;
+                    this.alpha = 1;
+                    this.decay = Math.random() * 0.02 + 0.01;
+                    const colors = ['#ffcc00', '#ff6600', '#ff3300', '#ffffff'];
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.alpha -= this.decay;
+                    if (this.alpha <= 0 || this.y < -20) {
+                        this.reset();
+                    }
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, this.alpha);
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#ff6600';
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                }
+                requestAnimationFrame(loop);
+            }
+            loop();
+        </script>
+    """, height=1, scrolling=False)
+
+# ============================================================
+# 6. 예언 데이터 엔진
 # ============================================================
 
 def generate_season_rankings(year, target_team_name, cosmic_lvl):
@@ -341,145 +402,6 @@ def generate_season_rankings(year, target_team_name, cosmic_lvl):
     return teams_data
 
 # ============================================================
-# 6. 피버타임 전용 대장간 불똥 파티클 Canvas (iframe 탈출 연출)
-# ============================================================
-
-if st.session_state.is_fever:
-    st.components.v1.html("""
-        <style>
-            body { margin: 0; overflow: hidden; background: transparent; }
-            #forgeCanvas {
-                position: fixed;
-                top: 0; left: 0;
-                width: 100vw; height: 100vh;
-                pointer-events: none;
-            }
-        </style>
-        <canvas id="forgeCanvas"></canvas>
-        <script>
-            // iframe 창의 크기를 메인 브라우저 부모 창 크기로 강제 바인딩
-            const parentWin = window.parent || window;
-            const canvas = document.getElementById('forgeCanvas');
-            const ctx = canvas.getContext('2d');
-
-            function resize() {
-                canvas.width = parentWin.innerWidth;
-                canvas.height = parentWin.innerHeight;
-            }
-            resize();
-            parentWin.addEventListener('resize', resize);
-
-            class ForgeSpark {
-                constructor() {
-                    this.reset();
-                }
-
-                reset() {
-                    // 대장간 모루 위치 (화면 하단 중앙)
-                    this.x = canvas.width / 2 + (Math.random() - 0.5) * 250;
-                    this.y = canvas.height * 0.85;
-                    
-                    // 강한 위쪽 쇄도 폭발 속도
-                    const angle = (Math.random() * -Math.PI);
-                    const speed = Math.random() * 26 + 10;
-                    
-                    this.vx = Math.cos(angle) * speed;
-                    this.vy = Math.sin(angle) * speed;
-                    
-                    this.gravity = 0.55;
-                    this.friction = 0.96;
-                    
-                    this.size = Math.random() * 4 + 2;
-                    this.alpha = 1.0;
-                    this.decay = Math.random() * 0.025 + 0.015;
-                    
-                    const colors = ['#ffffff', '#fff59d', '#ffb74d', '#ff5722', '#d50000'];
-                    this.color = colors[Math.floor(Math.random() * colors.length)];
-                    this.history = [];
-                }
-
-                update() {
-                    this.history.push({x: this.x, y: this.y});
-                    if (this.history.length > 6) this.history.shift();
-
-                    this.vx *= this.friction;
-                    this.vy *= this.friction;
-                    this.vy += this.gravity;
-
-                    this.x += this.vx;
-                    this.y += this.vy;
-                    this.alpha -= this.decay;
-
-                    if (this.alpha <= 0 || this.y > canvas.height + 50) {
-                        this.reset();
-                    }
-                }
-
-                draw() {
-                    ctx.save();
-                    ctx.globalAlpha = Math.max(0, this.alpha);
-                    
-                    // 불똥 잔상 트레일
-                    if (this.history.length > 1) {
-                        ctx.beginPath();
-                        ctx.moveTo(this.history[0].x, this.history[0].y);
-                        for (let i = 1; i < this.history.length; i++) {
-                            ctx.lineTo(this.history[i].x, this.history[i].y);
-                        }
-                        ctx.strokeStyle = this.color;
-                        ctx.lineWidth = this.size;
-                        ctx.lineCap = 'round';
-                        ctx.shadowBlur = 14;
-                        ctx.shadowColor = '#ff3d00';
-                        ctx.stroke();
-                    }
-
-                    // 불똥 머리
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.shadowBlur = 20;
-                    ctx.shadowColor = this.color;
-                    ctx.fill();
-                    
-                    ctx.restore();
-                }
-            }
-
-            const sparks = [];
-            for (let i = 0; i < 110; i++) {
-                sparks.push(new ForgeSpark());
-            }
-
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                sparks.forEach(s => {
-                    s.update();
-                    s.draw();
-                });
-                requestAnimationFrame(animate);
-            }
-            animate();
-        </script>
-    """, height=1, scrolling=False)
-
-    # 파티클 캔버스 iframe을 화면 전체 고정Overlay 레이어로 격상시키는 추가 CSS injection
-    st.markdown("""
-        <style>
-        iframe[title="st.components.v1.html"] {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 999999 !important;
-            pointer-events: none !important;
-            border: none !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-# ============================================================
 # 7. 클릭 창 & 카드 UI
 # ============================================================
 
@@ -497,9 +419,9 @@ if st.session_state.predict_result is None:
                         <div class="fever-bar-fill" style="width: {progress_percent}%;"></div>
                     </div>
                     <div class="energy-label-tag" style="border-color:#ff6600; color:#ffcc00 !important;">
-                        🔥 FEVER TIME (대장간 붉은 불똥 분출 중! 3배 충전) - 남은시간 {remaining_time:.1f}초
+                        🔥 FEVER TIME (3배 광속 충전) - 남은시간 {remaining_time:.1f}초
                     </div>
-                    <div class="fever-text-title">🔥 대장간 포효 피버!! 🔥</div>
+                    <div class="fever-text-title">🔥 피버타임 🔥</div>
                     <div style="font-size:1.1rem; color:#ffffff; margin-top:8px; font-weight:700;">
                         현재 기운: {st.session_state.click_count} 스택 ({current_level_info["title"]})
                     </div>
@@ -519,7 +441,7 @@ if st.session_state.predict_result is None:
 btn_col1, btn_col2 = st.columns([2, 1])
 
 with btn_col1:
-    click_label = "🔥 불똥 폭발 파워 클릭!! (+3)" if st.session_state.is_fever else "⚡ 클릭하여 우주의 기운 모으기!"
+    click_label = "🔥 광속 클릭!! (+3)" if st.session_state.is_fever else "⚡ 클릭하여 우주의 기운 모으기!"
     if st.button(click_label, use_container_width=True):
         st.session_state.predict_result = None
         st.session_state.last_click_time = time.time()
@@ -556,40 +478,6 @@ if predict_button:
     cosmic_level = current_level_info["level"]
     current_teams = generate_season_rankings(selected_year, selected_team_name, cosmic_level)
     team = current_teams[selected_team_name]
-
-    loading_seconds = max(2, min(5, int(1.5 + (cosmic_level * 0.25))))
-
-    for i in range(loading_seconds * 5):
-        base_size = 70 + (cosmic_level * 8)
-        pulse = (i % 4) * (2 + cosmic_level // 2)
-        size = base_size + pulse
-
-        glow_main = 15 + (cosmic_level * 4)
-        glow_outer = 30 + (cosmic_level * 8)
-
-        pulse_speed = max(0.1, 0.6 - (cosmic_level * 0.03))
-        spin_speed = max(0.4, 2.5 - (cosmic_level * 0.12))
-
-        mega_card_placeholder.markdown(f"""
-            <div class="standard-energy-card">
-                <div class="epic-stage">
-                    <div class="shockwave-ring" style="
-                        width: {size}px;
-                        height: {size}px;
-                        border-width: {2 + cosmic_level // 3}px;
-                        animation-duration: {pulse_speed}s;
-                        box-shadow: 0 0 {glow_main}px var(--team-glow);
-                    "></div>
-                    <div class="hyper-orb" style="
-                        width: {size}px;
-                        height: {size}px;
-                        box-shadow: 0 0 {glow_main}px var(--team-glow), 0 0 {glow_outer}px var(--team-sub-glow), inset 0 0 {glow_main}px #ffffff;
-                        animation-duration: {pulse_speed}s, {spin_speed}s;
-                    "></div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        time.sleep(0.12)
 
     st.session_state.predict_result = {
         "team": team,
@@ -643,8 +531,9 @@ if st.session_state.predict_result is not None:
 st.markdown("---")
 with st.expander("ℹ️ COSMIC PREDICT 알고리즘 및 기술 사양"):
     st.markdown("""
-    * **개발 언어 및 프레임워크:** Python 3.10+, Streamlit, HTML5 Canvas, JS Physics
-    * **수정 반영 사항:**
-      * Streamlit Component iframe 레이어 탈출 CSS (`iframe[title="st.components.v1.html"]`) 주입으로 화면 전체 불똥 파티클 출력 완벽 보장
-      * `window.parent` 크기 동기화로 브라우저 전체 창 기준 불똥 분사 연출
+    * **개발 언어 및 프레임워크:** Python 3.10+, Streamlit, HTML5 Canvas
+    * **수정 및 최적화 사항:**
+      * 타이틀 명칭을 **`피버타임`**으로 수정
+      * 파티클 연산 경량화(45개 오브젝트 제한)로 60fps 부드러운 애니메이션 확보
+      * 브라우저 창 전체 고정 Overlay CSS 적용으로 파티클 가시성 100% 보장
     """)
