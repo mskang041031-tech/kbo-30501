@@ -51,7 +51,7 @@ current_team_color = TEAM_COLORS[selected_team_name]["main"]
 current_team_sub_color = TEAM_COLORS[selected_team_name]["sub"]
 
 # ============================================================
-# 3. 팀별 동적 CSS & 정적 UI 스타일링
+# 3. 팀별 동적 CSS & UI 스타일링
 # ============================================================
 
 st.markdown(f"""
@@ -72,18 +72,6 @@ st.markdown(f"""
         background-attachment: fixed !important;
         color: #ffffff !important;
         font-family: 'Noto Sans KR', sans-serif;
-    }}
-
-    /* 파티클 iframe을 최상단 부모 윈도우 배경 레이어로 고정 */
-    iframe[title="st.components.v1.html"] {{
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        z-index: 999999 !important;
-        pointer-events: none !important;
-        border: none !important;
     }}
 
     p, span, label, div {{
@@ -270,32 +258,43 @@ def get_current_cosmic_level(clicks):
 current_level_info = get_current_cosmic_level(st.session_state.click_count)
 
 # ============================================================
-# 5. 경량화 60fps 불꽃 파티클 엔진 (피버타임 전용)
+# 5. 메인 브라우저 DOM 주입형 최적화 파티클 엔진
 # ============================================================
 
 if st.session_state.is_fever:
     st.components.v1.html("""
-        <style>
-            body { margin: 0; padding: 0; overflow: hidden; background: transparent; }
-            canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        </style>
-        <canvas id="pCanvas"></canvas>
         <script>
-            const canvas = document.getElementById('pCanvas');
+            const doc = window.parent.document;
+            
+            // 기존 캔버스 제거
+            let oldCanvas = doc.getElementById('fever-particles');
+            if (oldCanvas) oldCanvas.remove();
+
+            // 부모 창 최상단에 캔버스 생성
+            const canvas = doc.createElement('canvas');
+            canvas.id = 'fever-particles';
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.width = '100vw';
+            canvas.style.height = '100vh';
+            canvas.style.pointerEvents = 'none';
+            canvas.style.zIndex = '999999';
+            doc.body.appendChild(canvas);
+
             const ctx = canvas.getContext('2d');
 
             function resize() {
-                canvas.width = window.innerWidth || document.documentElement.clientWidth;
-                canvas.height = window.innerHeight || document.documentElement.clientHeight;
+                canvas.width = window.parent.innerWidth;
+                canvas.height = window.parent.innerHeight;
             }
             resize();
-            window.addEventListener('resize', resize);
+            window.parent.addEventListener('resize', resize);
 
-            // 경량화 파티클 개수 (최적화: 45개)
             const particles = [];
-            const count = 45;
+            const particleCount = 60;
 
-            class Particle {
+            class Spark {
                 constructor() {
                     this.reset();
                 }
@@ -303,12 +302,12 @@ if st.session_state.is_fever:
                 reset() {
                     this.x = Math.random() * canvas.width;
                     this.y = canvas.height + 10;
-                    this.vx = (Math.random() - 0.5) * 6;
-                    this.vy = -(Math.random() * 12 + 8);
-                    this.size = Math.random() * 4 + 2;
+                    this.vx = (Math.random() - 0.5) * 8;
+                    this.vy = -(Math.random() * 14 + 10);
+                    this.size = Math.random() * 5 + 3;
                     this.alpha = 1;
-                    this.decay = Math.random() * 0.02 + 0.01;
-                    const colors = ['#ffcc00', '#ff6600', '#ff3300', '#ffffff'];
+                    this.decay = Math.random() * 0.025 + 0.015;
+                    const colors = ['#ffffff', '#ffff80', '#ffaa00', '#ff3300'];
                     this.color = colors[Math.floor(Math.random() * colors.length)];
                 }
 
@@ -327,28 +326,38 @@ if st.session_state.is_fever:
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                     ctx.fillStyle = this.color;
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = '#ff6600';
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = this.color;
                     ctx.fill();
                     ctx.restore();
                 }
             }
 
-            for (let i = 0; i < count; i++) {
-                particles.push(new Particle());
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Spark());
             }
 
-            function loop() {
+            function animate() {
+                if (!doc.getElementById('fever-particles')) return;
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                for (let i = 0; i < particles.length; i++) {
-                    particles[i].update();
-                    particles[i].draw();
+                for (let p of particles) {
+                    p.update();
+                    p.draw();
                 }
-                requestAnimationFrame(loop);
+                requestAnimationFrame(animate);
             }
-            loop();
+            animate();
         </script>
-    """, height=1, scrolling=False)
+    """, height=0, width=0)
+else:
+    # 피버타임 종료 시 파티클 제거
+    st.components.v1.html("""
+        <script>
+            const doc = window.parent.document;
+            let oldCanvas = doc.getElementById('fever-particles');
+            if (oldCanvas) oldCanvas.remove();
+        </script>
+    """, height=0, width=0)
 
 # ============================================================
 # 6. 예언 데이터 엔진
@@ -532,8 +541,7 @@ st.markdown("---")
 with st.expander("ℹ️ COSMIC PREDICT 알고리즘 및 기술 사양"):
     st.markdown("""
     * **개발 언어 및 프레임워크:** Python 3.10+, Streamlit, HTML5 Canvas
-    * **수정 및 최적화 사항:**
-      * 타이틀 명칭을 **`피버타임`**으로 수정
-      * 파티클 연산 경량화(45개 오브젝트 제한)로 60fps 부드러운 애니메이션 확보
-      * 브라우저 창 전체 고정 Overlay CSS 적용으로 파티클 가시성 100% 보장
+    * **핵심 수정 사항:**
+      * Streamlit의 iframe 크기 제한을 우회하는 `window.parent.document` 기반 최상단 Canvas 직접 주입 방식 적용
+      * 피버타임 진입 시 브라우저 화면 전체에서 화려하게 솟구치는 불꽃 파티클 가시성 100% 확보
     """)
