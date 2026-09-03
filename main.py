@@ -258,132 +258,130 @@ def get_current_cosmic_level(clicks):
 current_level_info = get_current_cosmic_level(st.session_state.click_count)
 
 # ============================================================
-# 5. 메인 브라우저 DOM 주입형 방사형 파티클 엔진 (중심 폭발)
+# 5. 연속 유지형 영구 방사형 파티클 엔진 (재리런 방지)
 # ============================================================
 
 if st.session_state.is_fever:
     st.components.v1.html("""
         <script>
             const doc = window.parent.document;
-            
-            // 기존 캔버스 제거
-            let oldCanvas = doc.getElementById('fever-particles');
-            if (oldCanvas) oldCanvas.remove();
+            const win = window.parent;
 
-            // 최상단 캔버스 생성
-            const canvas = doc.createElement('canvas');
-            canvas.id = 'fever-particles';
-            canvas.style.position = 'fixed';
-            canvas.style.top = '0';
-            canvas.style.left = '0';
-            canvas.style.width = '100vw';
-            canvas.style.height = '100vh';
-            canvas.style.pointerEvents = 'none';
-            canvas.style.zIndex = '999999';
-            doc.body.appendChild(canvas);
+            if (!doc.getElementById('fever-particles')) {
+                const canvas = doc.createElement('canvas');
+                canvas.id = 'fever-particles';
+                canvas.style.position = 'fixed';
+                canvas.style.top = '0';
+                canvas.style.left = '0';
+                canvas.style.width = '100vw';
+                canvas.style.height = '100vh';
+                canvas.style.pointerEvents = 'none';
+                canvas.style.zIndex = '999999';
+                doc.body.appendChild(canvas);
 
-            const ctx = canvas.getContext('2d');
+                const ctx = canvas.getContext('2d');
 
-            function resize() {
-                canvas.width = window.parent.innerWidth;
-                canvas.height = window.parent.innerHeight;
-            }
-            resize();
-            window.parent.addEventListener('resize', resize);
-
-            const particles = [];
-            const particleCount = 85;
-
-            class SharpParticle {
-                constructor() {
-                    this.reset();
+                function resize() {
+                    canvas.width = win.innerWidth;
+                    canvas.height = win.innerHeight;
                 }
+                resize();
+                win.addEventListener('resize', resize);
 
-                reset() {
-                    // 화면 중앙 기준점 설정
-                    this.centerX = canvas.width / 2;
-                    this.centerY = canvas.height / 2;
-                    
-                    this.x = this.centerX;
-                    this.y = this.centerY;
+                const particles = [];
+                const particleCount = 90;
 
-                    // 360도 무작위 앙상블 방향각
-                    this.angle = Math.random() * Math.PI * 2;
-                    
-                    // 폭발적 가속도
-                    this.speed = Math.random() * 20 + 8;
-                    this.vx = Math.cos(this.angle) * this.speed;
-                    this.vy = Math.sin(this.angle) * this.speed;
-
-                    // 길쭉하고 날카로운 지오메트리
-                    this.length = Math.random() * 35 + 20; 
-                    this.width = Math.random() * 3 + 1.5;   
-
-                    this.alpha = 1;
-                    this.decay = Math.random() * 0.03 + 0.015;
-
-                    const colors = ['#ffffff', '#ffea00', '#ff5500', '#ff0055', '#00e5ff'];
-                    this.color = colors[Math.floor(Math.random() * colors.length)];
-                }
-
-                update() {
-                    this.x += this.vx;
-                    this.y += this.vy;
-                    this.alpha -= this.decay;
-
-                    if (this.alpha <= 0 || 
-                        this.x < 0 || this.x > canvas.width || 
-                        this.y < 0 || this.y > canvas.height) {
+                class SharpParticle {
+                    constructor() {
                         this.reset();
+                    }
+
+                    reset() {
+                        this.centerX = canvas.width / 2;
+                        this.centerY = canvas.height / 2;
+                        this.x = this.centerX;
+                        this.y = this.centerY;
+
+                        this.angle = Math.random() * Math.PI * 2;
+                        this.speed = Math.random() * 22 + 9;
+                        this.vx = Math.cos(this.angle) * this.speed;
+                        this.vy = Math.sin(this.angle) * this.speed;
+
+                        this.length = Math.random() * 40 + 20; 
+                        this.width = Math.random() * 3.5 + 1.5;   
+
+                        this.alpha = 1;
+                        this.decay = Math.random() * 0.03 + 0.015;
+
+                        const colors = ['#ffffff', '#ffea00', '#ff5500', '#ff0055', '#00e5ff'];
+                        this.color = colors[Math.floor(Math.random() * colors.length)];
+                    }
+
+                    update() {
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        this.alpha -= this.decay;
+
+                        if (this.alpha <= 0 || 
+                            this.x < 0 || this.x > canvas.width || 
+                            this.y < 0 || this.y > canvas.height) {
+                            this.reset();
+                        }
+                    }
+
+                    draw() {
+                        ctx.save();
+                        ctx.globalAlpha = Math.max(0, this.alpha);
+                        ctx.fillStyle = this.color;
+                        ctx.shadowBlur = 16;
+                        ctx.shadowColor = this.color;
+
+                        ctx.translate(this.x, this.y);
+                        ctx.rotate(this.angle);
+
+                        ctx.beginPath();
+                        ctx.moveTo(this.length, 0);                 
+                        ctx.lineTo(0, -this.width);                 
+                        ctx.lineTo(-this.length * 0.3, 0);          
+                        ctx.lineTo(0, this.width);                  
+                        ctx.closePath();
+                        ctx.fill();
+
+                        ctx.restore();
                     }
                 }
 
-                draw() {
-                    ctx.save();
-                    ctx.globalAlpha = Math.max(0, this.alpha);
-                    ctx.fillStyle = this.color;
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = this.color;
-
-                    ctx.translate(this.x, this.y);
-                    ctx.rotate(this.angle);
-
-                    // 날카로운 화살촉/마름모 다각형
-                    ctx.beginPath();
-                    ctx.moveTo(this.length, 0);                 
-                    ctx.lineTo(0, -this.width);                 
-                    ctx.lineTo(-this.length * 0.3, 0);          
-                    ctx.lineTo(0, this.width);                  
-                    ctx.closePath();
-                    ctx.fill();
-
-                    ctx.restore();
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push(new SharpParticle());
                 }
-            }
 
-            for (let i = 0; i < particleCount; i++) {
-                particles.push(new SharpParticle());
-            }
+                win.feverCanvasActive = true;
 
-            function animate() {
-                if (!doc.getElementById('fever-particles')) return;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                for (let p of particles) {
-                    p.update();
-                    p.draw();
+                function animate() {
+                    if (!win.feverCanvasActive) {
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        canvas.remove();
+                        return;
+                    }
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    for (let p of particles) {
+                        p.update();
+                        p.draw();
+                    }
+                    requestAnimationFrame(animate);
                 }
-                requestAnimationFrame(animate);
+                animate();
+            } else {
+                win.feverCanvasActive = true;
             }
-            animate();
         </script>
     """, height=0, width=0)
 else:
-    # 피버타임 종료 시 파티클 제거
+    # 피버타임 종료 시 제거
     st.components.v1.html("""
         <script>
-            const doc = window.parent.document;
-            let oldCanvas = doc.getElementById('fever-particles');
-            if (oldCanvas) oldCanvas.remove();
+            const win = window.parent;
+            win.feverCanvasActive = false;
         </script>
     """, height=0, width=0)
 
@@ -570,6 +568,6 @@ with st.expander("ℹ️ COSMIC PREDICT 알고리즘 및 기술 사양"):
     st.markdown("""
     * **개발 언어 및 프레임워크:** Python 3.10+, Streamlit, HTML5 Canvas
     * **핵심 수정 사항:**
-      * Streamlit의 iframe 제한을 우회하는 `window.parent.document` 기반 최상단 Canvas 직접 주입 방식 적용
-      * 피버타임 진입 시 화면 중앙에서 360도 전 방향으로 날카롭고 각진 광선 파티클이 튀어나오는 방사형 시각 효과 구현
+      * Streamlit 페이지 리로드(`st.rerun`) 환경에서도 이펙트 캔버스를 파괴하지 않고 유지하는 영구 애니메이션 루프 적용
+      * 스택 누적 및 예언 출력 동작 중에도 방사형 날카로운 파티클 지속 출력 보장
     """)
