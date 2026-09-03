@@ -51,7 +51,7 @@ current_team_color = TEAM_COLORS[selected_team_name]["main"]
 current_team_sub_color = TEAM_COLORS[selected_team_name]["sub"]
 
 # ============================================================
-# 3. 팀별 동적 CSS & 가시성 대폭 개선 폰트 스타일
+# 3. 팀별 동적 CSS & 고가시성 스타일링
 # ============================================================
 
 st.markdown(f"""
@@ -123,7 +123,7 @@ st.markdown(f"""
         text-shadow: 0 0 12px var(--team-glow), 0 2px 4px #000000 !important;
     }}
 
-    /* 표준 카드 */
+    /* 카드 기본 스타일 */
     .standard-energy-card {{
         background: rgba(8, 2, 20, 0.92);
         border: 3px solid var(--team-glow);
@@ -143,34 +143,34 @@ st.markdown(f"""
         overflow: hidden;
     }}
 
-    /* 피버타임 불꽃 특수 카드 */
+    /* 피버타임 연출 전용 카드 */
     .fever-energy-card {{
-        background: rgba(30, 0, 0, 0.95) !important;
+        background: rgba(25, 2, 0, 0.95) !important;
         border: 3px solid #ff3300 !important;
-        box-shadow: 0 0 55px #ff3300, inset 0 0 35px #ff9900 !important;
-        animation: feverGlow 0.6s infinite alternate;
+        box-shadow: 0 0 60px #ff3300, inset 0 0 40px #ffaa00 !important;
+        animation: feverPulseGlow 0.4s infinite alternate;
     }}
 
-    @keyframes feverGlow {{
-        0% {{ box-shadow: 0 0 35px #ff3300, inset 0 0 20px #ff9900; }}
-        100% {{ box-shadow: 0 0 65px #ff6600, inset 0 0 40px #ffcc00; }}
+    @keyframes feverPulseGlow {{
+        0% {{ box-shadow: 0 0 40px #ff2200, inset 0 0 25px #ff8800; }}
+        100% {{ box-shadow: 0 0 80px #ff6600, inset 0 0 50px #ffff00; }}
     }}
 
-    /* 피버타임 프로그레스 바 영역 */
+    /* 피버 프로그레스 바 */
     .fever-bar-container {{
         width: 100%;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.15);
         border-radius: 10px;
-        height: 14px;
+        height: 16px;
         margin-bottom: 1rem;
         overflow: hidden;
-        border: 1px solid #ff6600;
+        border: 1px solid #ffaa00;
     }}
 
     .fever-bar-fill {{
         height: 100%;
-        background: linear-gradient(90deg, #ff0000, #ff9900, #ffff00);
-        box-shadow: 0 0 10px #ff6600;
+        background: linear-gradient(90deg, #ff0000, #ff8800, #ffff00);
+        box-shadow: 0 0 15px #ffaa00;
         transition: width 0.1s linear;
     }}
 
@@ -196,19 +196,18 @@ st.markdown(f"""
     }}
 
     .fever-text-title {{
-        font-size: 2.3rem;
+        font-size: 2.4rem;
         font-weight: 900;
-        color: #ffff00 !important;
-        text-shadow: 0 0 15px #ff3300, 0 0 30px #ff0000, 0 2px 4px #000000 !important;
-        animation: pulseText 0.3s infinite alternate;
+        color: #ffffaa !important;
+        text-shadow: 0 0 20px #ff3300, 0 0 40px #ff0000, 0 2px 6px #000000 !important;
+        animation: pulseText 0.25s infinite alternate;
     }}
 
     @keyframes pulseText {{
-        0% {{ transform: scale(0.98); }}
-        100% {{ transform: scale(1.04); }}
+        0% {{ transform: scale(0.97); }}
+        100% {{ transform: scale(1.05); }}
     }}
 
-    /* Metric 가시성 수정 */
     [data-testid="stMetricValue"] {{
         color: #ffffff !important;
         font-size: 2.2rem !important;
@@ -257,11 +256,10 @@ COSMIC_LEVELS = [
 
 current_time = time.time()
 
-# 세션 상태 관리
 if "click_count" not in st.session_state:
     st.session_state.click_count = 0
 if "fever_counter" not in st.session_state:
-    st.session_state.fever_counter = 0  # 60스택 측정 카운터
+    st.session_state.fever_counter = 0
 if "is_fever" not in st.session_state:
     st.session_state.is_fever = False
 if "fever_end_time" not in st.session_state:
@@ -271,12 +269,12 @@ if "last_click_time" not in st.session_state:
 if "predict_result" not in st.session_state:
     st.session_state.predict_result = None
 
-# 피버타임 만료 판정
+# 피버타임 만료 처리
 if st.session_state.is_fever and current_time >= st.session_state.fever_end_time:
     st.session_state.is_fever = False
-    st.session_state.fever_counter = 0  # 종료 후 0부터 다시 카운트
+    st.session_state.fever_counter = 0
 
-# 방치 시 자연 감쇠 (피버타임 중에는 감쇠 없음)
+# 자연 감쇠
 if not st.session_state.is_fever:
     time_passed = current_time - st.session_state.last_click_time
     if time_passed > 2.5 and st.session_state.click_count > 0:
@@ -296,12 +294,11 @@ def get_current_cosmic_level(clicks):
 current_level_info = get_current_cosmic_level(st.session_state.click_count)
 
 # ============================================================
-# 5. 예언 데이터 생성 엔진
+# 5. 예언 데이터 엔진
 # ============================================================
 
 def generate_season_rankings(year, target_team_name, cosmic_lvl):
     base_teams = list(TEAM_COLORS.keys())
-
     rng = random.Random(year)
     shuffled_teams = base_teams.copy()
     rng.shuffle(shuffled_teams)
@@ -348,14 +345,134 @@ def generate_season_rankings(year, target_team_name, cosmic_lvl):
     return teams_data
 
 # ============================================================
-# 6. 클릭 창 & 불꽃 이펙트 보드
+# 6. 피버타임 전용 대장간 불똥 파티클 Canvas 스크립트
+# ============================================================
+
+if st.session_state.is_fever:
+    st.components.v1.html("""
+        <canvas id="forgeSparkCanvas" style="
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 99999;
+        "></canvas>
+        <script>
+            const canvas = document.getElementById('forgeSparkCanvas');
+            const ctx = canvas.getContext('2d');
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            class ForgeSpark {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    // 화면 하단 중앙 (대장간 모루 위치)에서 폭발하듯 분사
+                    this.x = canvas.width / 2 + (Math.random() - 0.5) * 200;
+                    this.y = canvas.height * 0.75;
+                    
+                    // 사방으로 튀어 오르는 높은 초속도
+                    const angle = (Math.random() * -Math.PI); // 위쪽 반원 방향
+                    const speed = Math.random() * 22 + 8;
+                    
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    
+                    this.gravity = 0.45; // 떨어지는 중력
+                    this.friction = 0.97; // 공기 저항
+                    
+                    this.size = Math.random() * 3.5 + 1.5;
+                    this.alpha = 1.0;
+                    this.decay = Math.random() * 0.02 + 0.015;
+                    
+                    // 불똥 색상: 흰색(뜨거움) -> 황금색 -> 붉은주황색
+                    const colors = ['#ffffff', '#fff3a1', '#ffaa00', '#ff4400', '#ff0000'];
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    // 잔상 꼬리 궤적 기억
+                    this.history = [];
+                }
+
+                update() {
+                    this.history.push({x: this.x, y: this.y});
+                    if (this.history.length > 5) this.history.shift();
+
+                    this.vx *= this.friction;
+                    this.vy *= this.friction;
+                    this.vy += this.gravity;
+
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.alpha -= this.decay;
+
+                    if (this.alpha <= 0 || this.y > canvas.height) {
+                        this.reset();
+                    }
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.alpha;
+                    
+                    // 잔상 꼬리선 그리기로 대장간 불똥 속도감 연출
+                    if (this.history.length > 1) {
+                        ctx.beginPath();
+                        ctx.moveTo(this.history[0].x, this.history[0].y);
+                        for (let i = 1; i < this.history.length; i++) {
+                            ctx.lineTo(this.history[i].x, this.history[i].y);
+                        }
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = this.size;
+                        ctx.lineCap = 'round';
+                        ctx.shadowBlur = 12;
+                        ctx.shadowColor = '#ff4400';
+                        ctx.stroke();
+                    }
+
+                    // 불똥 헤드
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = this.color;
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+            }
+
+            const sparks = [];
+            for (let i = 0; i < 90; i++) {
+                sparks.push(new ForgeSpark());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                sparks.forEach(spark => {
+                    spark.update();
+                    spark.draw();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        </script>
+    """, height=0)
+
+# ============================================================
+# 7. 클릭 창 & 카드 UI
 # ============================================================
 
 mega_card_placeholder = st.empty()
 
 if st.session_state.predict_result is None:
     with mega_card_placeholder.container():
-        # 피버타임 상태일 때의 UI 연출
         if st.session_state.is_fever:
             remaining_time = max(0.0, st.session_state.fever_end_time - current_time)
             progress_percent = (remaining_time / 9.0) * 100
@@ -366,16 +483,15 @@ if st.session_state.predict_result is None:
                         <div class="fever-bar-fill" style="width: {progress_percent}%;"></div>
                     </div>
                     <div class="energy-label-tag" style="border-color:#ff6600; color:#ffcc00 !important;">
-                        🔥 FEVER TIME (3배 속도 충전 중!) - 남은시간 {remaining_time:.1f}초
+                        🔥 FEVER TIME (대장간 붉은 불똥 분출 중! 3배 충전) - 남은시간 {remaining_time:.1f}초
                     </div>
-                    <div class="fever-text-title">🔥 코스믹 피버 스퍼트!! 🔥</div>
+                    <div class="fever-text-title">🔥 대장간 포효 피버!! 🔥</div>
                     <div style="font-size:1.1rem; color:#ffffff; margin-top:8px; font-weight:700;">
                         현재 기운: {st.session_state.click_count} 스택 ({current_level_info["title"]})
                     </div>
                 </div>
             """, unsafe_allow_html=True)
         else:
-            # 일반 상태 UI 연출
             st.markdown(f"""
                 <div class="standard-energy-card">
                     <div class="energy-label-tag">
@@ -389,20 +505,17 @@ if st.session_state.predict_result is None:
 btn_col1, btn_col2 = st.columns([2, 1])
 
 with btn_col1:
-    click_label = "🔥 피버 파워 클릭!! (+3)" if st.session_state.is_fever else "⚡ 클릭하여 우주의 기운 모으기!"
+    click_label = "🔥 불똥 폭발 파워 클릭!! (+3)" if st.session_state.is_fever else "⚡ 클릭하여 우주의 기운 모으기!"
     if st.button(click_label, use_container_width=True):
         st.session_state.predict_result = None
         st.session_state.last_click_time = time.time()
 
         if st.session_state.is_fever:
-            # 피버타임 중에는 3배 상향 조정
             st.session_state.click_count = min(500, st.session_state.click_count + 3)
         else:
-            # 일반 클릭 (+1)
             st.session_state.click_count = min(500, st.session_state.click_count + 1)
             st.session_state.fever_counter += 1
 
-            # 60스택 달성 시 피버타임 돌입 (9초 유지)
             if st.session_state.fever_counter >= 60:
                 st.session_state.is_fever = True
                 st.session_state.fever_end_time = time.time() + 9.0
@@ -422,7 +535,7 @@ with btn_col2:
 predict_button = st.button("🔮 모은 기운으로 미래 운명 예언받기", use_container_width=True)
 
 # ============================================================
-# 7. 예언 연출 및 결과 출력
+# 8. 예언 결과 출력
 # ============================================================
 
 if predict_button:
@@ -471,7 +584,7 @@ if predict_button:
     }
     st.rerun()
 
-# 예언 결과 카드 출력
+# 예언 결과 카드
 if st.session_state.predict_result is not None:
     res = st.session_state.predict_result
     team = res["team"]
@@ -516,10 +629,9 @@ if st.session_state.predict_result is not None:
 st.markdown("---")
 with st.expander("ℹ️ COSMIC PREDICT 알고리즘 및 기술 사양"):
     st.markdown("""
-    * **개발 언어 및 프레임워크:** Python 3.10+, Streamlit
-    * **주요 기능:**
-      * 피버타임(Fever Time) 메커니즘: 60스택 달성 시 9초간 불꽃 이펙트 및 스택 3배 보너스 부스트
-      * CSS Variables (`--team-glow`) 기반 10개 구단 고유 상징색 수용 스타일 엔진
-      * 실시간 CSS Progress-Bar 애니메이션을 활용한 피버타임 타이머 UI
-      * Noto Sans KR 900 기반 고가시성 텍스트 섀도 기법 적용
+    * **개발 언어 및 프레임워크:** Python 3.10+, Streamlit, HTML5 Canvas, JS Physics
+    * **핵심 기능:**
+      * 대장간 스파크 파티클 엔진: 피버타임 진입 시 중력 및 감쇄 물리 법칙을 반영한 90개 이상의 실시간 궤적 불똥(Spark Trail) 분출
+      * 피버타임 메커니즘: 60스택 달성 시 9초간 화면 불꽃 이펙트 및 스택 3배 보너스 부스트
+      * CSS Variables (`--team-glow`) 기반 10개 구단 고유 상징색 동적 렌더링
     """)
