@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 import random
 import time
 
@@ -15,117 +14,149 @@ st.set_page_config(
 )
 
 # ============================================================
-# 2. 레이어 최적화 은하수 배경 & 코스믹 판타지 CSS
+# 2. KBO 10개 구단 시그니처 Glowing 컬러 맵핑
 # ============================================================
 
-st.markdown("""
+TEAM_COLORS = {
+    "LG 트윈스": {"main": "#C3002F", "sub": "#C3002F"},
+    "KIA 타이거즈": {"main": "#EA0029", "sub": "#FF4D4D"},
+    "삼성 라이온즈": {"main": "#0066FF", "sub": "#00D8FF"},
+    "KT 위즈": {"main": "#FF003B", "sub": "#FF6680"},
+    "두산 베어스": {"main": "#1A49C8", "sub": "#5C85FF"},
+    "SSG 랜더스": {"main": "#CE0E2D", "sub": "#FF3355"},
+    "롯데 자이언츠": {"main": "#003399", "sub": "#DC042B"},
+    "한화 이글스": {"main": "#FF6600", "sub": "#FFAA00"},
+    "NC 다이노스": {"main": "#0072CE", "sub": "#E3A300"},
+    "키움 히어로즈": {"main": "#820024", "sub": "#FF2A6D"}
+}
+
+# 상단 헤더 및 팀 선택 UI
+st.markdown('<div class="fantasy-title">COSMIC KBO PREDICT</div>', unsafe_allow_html=True)
+st.markdown('<div class="fantasy-subtitle">🌌 은하수의 코스믹 파동과 당신의 기운으로 미래 KBO 시즌의 운명을 예언합니다.</div>', unsafe_allow_html=True)
+
+st.divider()
+
+col_season, col_team = st.columns([1, 1])
+
+with col_season:
+    seasons = [f"{year} 시즌" for year in range(2027, 2101)]
+    selected_season_str = st.selectbox("📅 예언받을 시즌 선택", options=seasons)
+    selected_year = int(selected_season_str.split()[0])
+
+with col_team:
+    teams_list = list(TEAM_COLORS.keys())
+    selected_team_name = st.selectbox("🔍 예언받을 팀 선택", options=teams_list)
+
+# 선택된 팀의 동적 컬러 추출
+current_team_color = TEAM_COLORS[selected_team_name]["main"]
+current_team_sub_color = TEAM_COLORS[selected_team_name]["sub"]
+
+# ============================================================
+# 3. 팀별 동적 CSS 적용 (CSS 변수 사용)
+# ============================================================
+
+st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Noto+Sans+KR:wght@500;700;900&display=swap');
 
-    [data-testid="stSidebar"], [data-testid="collapsedControl"] {
-        display: none !important;
-    }
+    :root {{
+        --team-glow: {current_team_color};
+        --team-sub-glow: {current_team_sub_color};
+    }}
 
-    /* 은하수 배경 설정 */
-    .stApp {
+    [data-testid="stSidebar"], [data-testid="collapsedControl"] {{
+        display: none !important;
+    }}
+
+    .stApp {{
         background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%) !important;
         background-attachment: fixed !important;
         color: #ffffff !important;
         font-family: 'Noto Sans KR', sans-serif;
-    }
+    }}
 
-    .stApp::before {
+    .stApp::before {{
         content: "";
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
         background: 
-            radial-gradient(circle at 20% 30%, rgba(255, 0, 127, 0.2) 0%, transparent 40%),
-            radial-gradient(circle at 80% 70%, rgba(0, 255, 255, 0.22) 0%, transparent 45%),
+            radial-gradient(circle at 20% 30%, rgba(255, 0, 127, 0.15) 0%, transparent 40%),
+            radial-gradient(circle at 80% 70%, var(--team-glow) 0.2, transparent 45%),
             radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.15) 0%, transparent 60%);
         pointer-events: none !important;
         z-index: -1 !important;
         animation: galaxyMove 20s ease-in-out infinite alternate;
-    }
+    }}
 
-    [data-testid="stMainBlockContainer"] {
+    [data-testid="stMainBlockContainer"] {{
         position: relative;
         z-index: 1 !important;
-    }
+    }}
 
-    @keyframes galaxyMove {
-        0% { transform: scale(1) rotate(0deg); }
-        100% { transform: scale(1.15) rotate(3deg); }
-    }
-
-    p, span, label, div {
-        color: #f0f6ff !important;
-        text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.9);
-    }
-
-    .fantasy-title {
+    .fantasy-title {{
         font-family: 'Cinzel Decorative', 'Noto Sans KR', cursive, serif;
         font-size: 3.2rem !important;
         font-weight: 900;
         text-align: center;
         letter-spacing: 2px;
-        background: linear-gradient(180deg, #f4ffb0 0%, #00ffff 45%, #0055ff 85%);
+        background: linear-gradient(180deg, #f4ffb0 0%, var(--team-glow) 50%, #0055ff 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        filter: drop-shadow(3px 4px 0px #ff007f) drop-shadow(0px 0px 22px rgba(0, 240, 255, 0.9));
+        filter: drop-shadow(3px 4px 0px #ff007f) drop-shadow(0px 0px 22px var(--team-glow));
         margin-bottom: 0.2rem;
-    }
+    }}
 
-    .fantasy-subtitle {
+    .fantasy-subtitle {{
         text-align: center;
         font-size: 1.05rem;
-        color: #00ffff !important;
+        color: var(--team-sub-glow) !important;
         font-weight: 700;
         margin-bottom: 1.5rem;
         letter-spacing: 1px;
-        text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
-    }
+        text-shadow: 0 0 10px var(--team-glow);
+    }}
 
-    /* 클릭 창 (표준 크기) */
-    .standard-energy-card {
+    /* 선택한 팀의 색상이 반영되는 동적 에너지 카드 */
+    .standard-energy-card {{
         background: rgba(12, 4, 28, 0.88);
-        border: 3px solid #00ffff;
+        border: 3px solid var(--team-glow);
         border-radius: 24px;
         padding: 2rem 1.5rem;
         text-align: center;
         margin: 1.2rem 0 1.8rem 0;
-        box-shadow: 0 0 35px rgba(255, 0, 127, 0.6), inset 0 0 25px rgba(0, 255, 255, 0.3);
+        box-shadow: 0 0 35px var(--team-glow), inset 0 0 25px var(--team-sub-glow);
         backdrop-filter: blur(12px);
         min-height: 240px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        transition: all 0.3s ease;
-    }
+        transition: all 0.4s ease;
+    }}
 
-    .standard-energy-card:hover {
-        box-shadow: 0 0 50px rgba(0, 255, 255, 0.85), inset 0 0 35px rgba(255, 0, 127, 0.5);
-        border-color: #ff007f;
-    }
+    .standard-energy-card:hover {{
+        box-shadow: 0 0 55px var(--team-glow), inset 0 0 35px var(--team-sub-glow);
+        border-color: var(--team-sub-glow);
+    }}
 
-    .energy-label-tag {
+    .energy-label-tag {{
         font-size: 1rem;
         color: #88ccff !important;
         letter-spacing: 2px;
         margin-bottom: 0.8rem;
         font-weight: 700;
-    }
+    }}
 
-    .energy-level-name {
+    .energy-level-name {{
         font-family: 'Cinzel Decorative', 'Noto Sans KR', sans-serif;
         font-size: 2.2rem;
         font-weight: 900;
-        color: #ff3399 !important;
-        text-shadow: 0 0 16px #ff007f, 0 0 30px #00ffff;
-    }
+        color: #ffffff !important;
+        text-shadow: 0 0 16px var(--team-glow), 0 0 30px var(--team-sub-glow);
+    }}
 
-    /* 이펙트 오비트 무대 */
-    .epic-stage {
+    /* 팀 컬러 오비트 로딩 애니메이션 */
+    .epic-stage {{
         display: flex;
         align-items: center;
         justify-content: center;
@@ -133,60 +164,60 @@ st.markdown("""
         width: 100%;
         overflow: hidden;
         position: relative;
-    }
+    }}
 
-    .hyper-orb {
+    .hyper-orb {{
         position: relative;
         border-radius: 50%;
-        background: radial-gradient(circle at 30% 30%, #ffffff, #ff00a0 35%, #00ffff 70%, #000000 100%);
+        background: radial-gradient(circle at 30% 30%, #ffffff, var(--team-glow) 40%, var(--team-sub-glow) 70%, #000000 100%);
         animation: hyperPulse 0.4s infinite alternate, hyperSpin 2s linear infinite;
-    }
+    }}
 
-    .shockwave-ring {
+    .shockwave-ring {{
         position: absolute;
         border-radius: 50%;
-        border: 3px solid rgba(0, 255, 255, 0.8);
+        border: 3px solid var(--team-glow);
         animation: shockwave 0.8s infinite ease-out;
-    }
+    }}
 
-    @keyframes hyperPulse {
-        0% { transform: scale(0.92); filter: brightness(1.2) hue-rotate(0deg); }
-        100% { transform: scale(1.22); filter: brightness(2.5) hue-rotate(180deg); }
-    }
+    @keyframes hyperPulse {{
+        0% {{ transform: scale(0.92); filter: brightness(1.2) hue-rotate(0deg); }}
+        100% {{ transform: scale(1.22); filter: brightness(2.0) hue-rotate(45deg); }}
+    }}
 
-    @keyframes hyperSpin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
+    @keyframes hyperSpin {{
+        0% {{ transform: rotate(0deg); }}
+        100% {{ transform: rotate(360deg); }}
+    }}
 
-    @keyframes shockwave {
-        0% { transform: scale(0.4); opacity: 1; }
-        100% { transform: scale(2.2); opacity: 0; }
-    }
+    @keyframes shockwave {{
+        0% {{ transform: scale(0.4); opacity: 1; }}
+        100% {{ transform: scale(2.2); opacity: 0; }}
+    }}
 
-    [data-testid="stMetricValue"] {
-        color: #00ffff !important;
+    [data-testid="stMetricValue"] {{
+        color: var(--team-sub-glow) !important;
         font-size: 2.2rem !important;
         font-weight: 900 !important;
-        text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
-    }
+        text-shadow: 0 0 10px var(--team-glow);
+    }}
     
-    [data-testid="stMetricLabel"] {
+    [data-testid="stMetricLabel"] {{
         color: #ffffff !important;
         font-weight: 700 !important;
         font-size: 1.05rem !important;
-    }
+    }}
 
-    .stSelectbox label {
-        color: #00ffff !important;
+    .stSelectbox label {{
+        color: var(--team-sub-glow) !important;
         font-size: 1.1rem !important;
         font-weight: 700 !important;
-    }
+    }}
     </style>
 """, unsafe_allow_html=True)
 
 # ============================================================
-# 3. 우주의 기운 16단계 (500 스택 기준)
+# 4. 우주의 기운 16단계
 # ============================================================
 
 COSMIC_LEVELS = [
@@ -208,7 +239,6 @@ COSMIC_LEVELS = [
     {"level": 16, "clicks": 500, "title": "💥 빅뱅(Big Bang) 창조주의 정점"}
 ]
 
-# Session State 안전한 초기화
 current_time = time.time()
 if "click_count" not in st.session_state:
     st.session_state.click_count = 0
@@ -217,7 +247,6 @@ if "last_click_time" not in st.session_state:
 if "predict_result" not in st.session_state:
     st.session_state.predict_result = None
 
-# [개선된 감쇠 로직] 마지막 클릭 후 2.5초 이상 방치 시 차감
 time_passed = current_time - st.session_state.last_click_time
 if time_passed > 2.5 and st.session_state.click_count > 0:
     decay_amount = int((time_passed - 2.5) * 6)
@@ -236,42 +265,17 @@ def get_current_cosmic_level(clicks):
 current_level_info = get_current_cosmic_level(st.session_state.click_count)
 
 # ============================================================
-# 4. 헤더 및 컨트롤
-# ============================================================
-
-st.markdown('<div class="fantasy-title">COSMIC KBO PREDICT</div>', unsafe_allow_html=True)
-st.markdown('<div class="fantasy-subtitle">🌌 은하수의 코스믹 파동과 당신의 기운으로 미래 KBO 시즌의 운명을 예언합니다.</div>', unsafe_allow_html=True)
-
-st.divider()
-
-col_season, col_team = st.columns([1, 1])
-
-with col_season:
-    seasons = [f"{year} 시즌" for year in range(2027, 2101)]
-    selected_season_str = st.selectbox("📅 예언받을 시즌 선택", options=seasons)
-    selected_year = int(selected_season_str.split()[0])
-
-with col_team:
-    teams_list = ["LG 트윈스", "KIA 타이거즈", "삼성 라이온즈", "KT 위즈", "두산 베어스", 
-                  "SSG 랜더스", "롯데 자이언츠", "한화 이글스", "NC 다이노스", "키움 히어로즈"]
-    selected_team_name = st.selectbox("🔍 예언받을 팀 선택", options=teams_list)
-
-# ============================================================
 # 5. 예언 데이터 생성 엔진
 # ============================================================
 
 def generate_season_rankings(year, target_team_name, cosmic_lvl):
-    base_teams = [
-        "LG 트윈스", "KIA 타이거즈", "삼성 라이온즈", "KT 위즈", "두산 베어스",
-        "SSG 랜더스", "롯데 자이언츠", "한화 이글스", "NC 다이노스", "키움 히어로즈"
-    ]
+    base_teams = list(TEAM_COLORS.keys())
 
     rng = random.Random(year)
     shuffled_teams = base_teams.copy()
     rng.shuffle(shuffled_teams)
 
     orig_rank = shuffled_teams.index(target_team_name) + 1
-
     rank_boost = int((cosmic_lvl - 1) * (orig_rank - 1) / 15.0)
     final_target_rank = max(1, orig_rank - rank_boost)
 
@@ -318,7 +322,6 @@ def generate_season_rankings(year, target_team_name, cosmic_lvl):
 
 mega_card_placeholder = st.empty()
 
-# 클릭 창 (결과 출력이 없을 때)
 if st.session_state.predict_result is None:
     with mega_card_placeholder.container():
         st.markdown(f"""
@@ -346,16 +349,11 @@ with btn_col2:
 
 predict_button = st.button("🔮 모은 기운으로 미래 운명 예언받기", use_container_width=True)
 
-# ============================================================
-# 7. 이펙트 차등 연출 및 예언 결과 출력
-# ============================================================
-
 if predict_button:
     cosmic_level = current_level_info["level"]
     current_teams = generate_season_rankings(selected_year, selected_team_name, cosmic_level)
     team = current_teams[selected_team_name]
 
-    # 로딩 애니메이션 프레임 축소 (UI 병목 해소)
     loading_seconds = max(2, min(5, int(1.5 + (cosmic_level * 0.25))))
 
     for i in range(loading_seconds * 5):
@@ -368,9 +366,6 @@ if predict_button:
 
         pulse_speed = max(0.1, 0.6 - (cosmic_level * 0.03))
         spin_speed = max(0.4, 2.5 - (cosmic_level * 0.12))
-        hue_shift = (i * 30 * cosmic_level) % 360
-
-        shockwave_speed = max(0.2, 1.0 - (cosmic_level * 0.05))
 
         mega_card_placeholder.markdown(f"""
             <div class="standard-energy-card">
@@ -379,15 +374,14 @@ if predict_button:
                         width: {size}px;
                         height: {size}px;
                         border-width: {2 + cosmic_level // 3}px;
-                        animation-duration: {shockwave_speed}s;
-                        box-shadow: 0 0 {glow_main}px #00ffff;
+                        animation-duration: {pulse_speed}s;
+                        box-shadow: 0 0 {glow_main}px var(--team-glow);
                     "></div>
                     <div class="hyper-orb" style="
                         width: {size}px;
                         height: {size}px;
-                        box-shadow: 0 0 {glow_main}px #ff007f, 0 0 {glow_outer}px #00ffff, inset 0 0 {glow_main}px #ffffff;
+                        box-shadow: 0 0 {glow_main}px var(--team-glow), 0 0 {glow_outer}px var(--team-sub-glow), inset 0 0 {glow_main}px #ffffff;
                         animation-duration: {pulse_speed}s, {spin_speed}s;
-                        filter: brightness({1.0 + cosmic_level * 0.12}) hue-rotate({hue_shift}deg);
                     "></div>
                 </div>
             </div>
@@ -409,8 +403,8 @@ if st.session_state.predict_result is not None:
     with mega_card_placeholder.container():
         st.markdown(f"""
             <div class="standard-energy-card">
-                <h2 style="margin:0; color:#00ffff; font-family:'Noto Sans KR'; font-weight:800;">🔮 {team['name']} - {res['year']} 시즌 최종 예언</h2>
-                <h1 style="font-size:3.2rem; margin: 15px 0; color:#00ffff; font-family:'Cinzel Decorative'; filter: drop-shadow(0 0 12px #ff007f);">최종 예상 순위: {team['rank']}위</h1>
+                <h2 style="margin:0; color:var(--team-sub-glow); font-family:'Noto Sans KR'; font-weight:800;">🔮 {team['name']} - {res['year']} 시즌 최종 예언</h2>
+                <h1 style="font-size:3.2rem; margin: 15px 0; color:var(--team-sub-glow); font-family:'Cinzel Decorative'; filter: drop-shadow(0 0 12px var(--team-glow));">최종 예상 순위: {team['rank']}위</h1>
                 <p style="font-size:1.3rem; font-weight:700; color:#ffffff;">{team['wins']}승 {team['draws']}무 {team['losses']}패 (승률 {team['win_rate']})</p>
             </div>
         """, unsafe_allow_html=True)
@@ -441,3 +435,16 @@ if st.session_state.predict_result is not None:
             st.warning("⚡ 치열한 가을야구 경계선에서 운명이 뜨겁게 요동치고 있습니다.")
         else:
             st.error("🌌 이번 시즌은 우주의 기운이 부족하여 다음을 기약해야 합니다.")
+
+# 수행평가 제출용 하단 설명창
+st.markdown("---")
+with st.expander("ℹ️ COSMIC PREDICT 알고리즘 및 기술 사양"):
+    st.markdown("""
+    * **개발 언어 및 프레임워크:** Python 3.10+, Streamlit
+    * **적용 기술:** 
+      * CSS3 Variables(`--team-glow`) 기반 팀별 동적 Glowing 테마 전환 기법
+      * `st.session_state`를 활용한 실시간 클릭 스택 및 감쇠(Decay) 상태 관리
+      * CSS3 Keyframe 애니메이션을 활용한 동적 하이퍼 오브(Orb) 이펙트 연출
+      * 사용자 결정론적(Deterministic) 난수 시드 기반 KBO 순위 산출 알고리즘
+    * **알고리즘 작동 원리:** 선택한 시즌 연도와 팀명을 조합한 고유 시드값에 사용자가 모은 '우주의 기운(최대 500스택)' 가중치를 부여하여 순위 및 승률 데이터를 실시간 보정합니다.
+    """)
