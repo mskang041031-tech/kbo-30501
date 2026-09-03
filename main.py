@@ -92,7 +92,6 @@ st.markdown(f"""
         z-index: 1 !important;
     }}
 
-    /* === 폰트 가시성 강화 스타일 === */
     p, span, label, div {{
         color: #ffffff !important;
         text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95) !important;
@@ -123,7 +122,6 @@ st.markdown(f"""
         text-shadow: 0 0 12px var(--team-glow), 0 2px 4px #000000 !important;
     }}
 
-    /* 카드 기본 스타일 */
     .standard-energy-card {{
         background: rgba(8, 2, 20, 0.92);
         border: 3px solid var(--team-glow);
@@ -143,7 +141,6 @@ st.markdown(f"""
         overflow: hidden;
     }}
 
-    /* 피버타임 연출 전용 카드 */
     .fever-energy-card {{
         background: rgba(25, 2, 0, 0.95) !important;
         border: 3px solid #ff3300 !important;
@@ -156,7 +153,6 @@ st.markdown(f"""
         100% {{ box-shadow: 0 0 80px #ff6600, inset 0 0 50px #ffff00; }}
     }}
 
-    /* 피버 프로그레스 바 */
     .fever-bar-container {{
         width: 100%;
         background: rgba(255, 255, 255, 0.15);
@@ -345,28 +341,33 @@ def generate_season_rankings(year, target_team_name, cosmic_lvl):
     return teams_data
 
 # ============================================================
-# 6. 피버타임 전용 대장간 불똥 파티클 Canvas 스크립트
+# 6. 피버타임 전용 대장간 불똥 파티클 Canvas (iframe 탈출 연출)
 # ============================================================
 
 if st.session_state.is_fever:
     st.components.v1.html("""
-        <canvas id="forgeSparkCanvas" style="
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            pointer-events: none;
-            z-index: 99999;
-        "></canvas>
+        <style>
+            body { margin: 0; overflow: hidden; background: transparent; }
+            #forgeCanvas {
+                position: fixed;
+                top: 0; left: 0;
+                width: 100vw; height: 100vh;
+                pointer-events: none;
+            }
+        </style>
+        <canvas id="forgeCanvas"></canvas>
         <script>
-            const canvas = document.getElementById('forgeSparkCanvas');
+            // iframe 창의 크기를 메인 브라우저 부모 창 크기로 강제 바인딩
+            const parentWin = window.parent || window;
+            const canvas = document.getElementById('forgeCanvas');
             const ctx = canvas.getContext('2d');
 
-            function resizeCanvas() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
+            function resize() {
+                canvas.width = parentWin.innerWidth;
+                canvas.height = parentWin.innerHeight;
             }
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
+            resize();
+            parentWin.addEventListener('resize', resize);
 
             class ForgeSpark {
                 constructor() {
@@ -374,35 +375,32 @@ if st.session_state.is_fever:
                 }
 
                 reset() {
-                    // 화면 하단 중앙 (대장간 모루 위치)에서 폭발하듯 분사
-                    this.x = canvas.width / 2 + (Math.random() - 0.5) * 200;
-                    this.y = canvas.height * 0.75;
+                    // 대장간 모루 위치 (화면 하단 중앙)
+                    this.x = canvas.width / 2 + (Math.random() - 0.5) * 250;
+                    this.y = canvas.height * 0.85;
                     
-                    // 사방으로 튀어 오르는 높은 초속도
-                    const angle = (Math.random() * -Math.PI); // 위쪽 반원 방향
-                    const speed = Math.random() * 22 + 8;
+                    // 강한 위쪽 쇄도 폭발 속도
+                    const angle = (Math.random() * -Math.PI);
+                    const speed = Math.random() * 26 + 10;
                     
                     this.vx = Math.cos(angle) * speed;
                     this.vy = Math.sin(angle) * speed;
                     
-                    this.gravity = 0.45; // 떨어지는 중력
-                    this.friction = 0.97; // 공기 저항
+                    this.gravity = 0.55;
+                    this.friction = 0.96;
                     
-                    this.size = Math.random() * 3.5 + 1.5;
+                    this.size = Math.random() * 4 + 2;
                     this.alpha = 1.0;
-                    this.decay = Math.random() * 0.02 + 0.015;
+                    this.decay = Math.random() * 0.025 + 0.015;
                     
-                    // 불똥 색상: 흰색(뜨거움) -> 황금색 -> 붉은주황색
-                    const colors = ['#ffffff', '#fff3a1', '#ffaa00', '#ff4400', '#ff0000'];
+                    const colors = ['#ffffff', '#fff59d', '#ffb74d', '#ff5722', '#d50000'];
                     this.color = colors[Math.floor(Math.random() * colors.length)];
-                    
-                    // 잔상 꼬리 궤적 기억
                     this.history = [];
                 }
 
                 update() {
                     this.history.push({x: this.x, y: this.y});
-                    if (this.history.length > 5) this.history.shift();
+                    if (this.history.length > 6) this.history.shift();
 
                     this.vx *= this.friction;
                     this.vy *= this.friction;
@@ -412,16 +410,16 @@ if st.session_state.is_fever:
                     this.y += this.vy;
                     this.alpha -= this.decay;
 
-                    if (this.alpha <= 0 || this.y > canvas.height) {
+                    if (this.alpha <= 0 || this.y > canvas.height + 50) {
                         this.reset();
                     }
                 }
 
                 draw() {
                     ctx.save();
-                    ctx.globalAlpha = this.alpha;
+                    ctx.globalAlpha = Math.max(0, this.alpha);
                     
-                    // 잔상 꼬리선 그리기로 대장간 불똥 속도감 연출
+                    // 불똥 잔상 트레일
                     if (this.history.length > 1) {
                         ctx.beginPath();
                         ctx.moveTo(this.history[0].x, this.history[0].y);
@@ -431,16 +429,16 @@ if st.session_state.is_fever:
                         ctx.strokeStyle = this.color;
                         ctx.lineWidth = this.size;
                         ctx.lineCap = 'round';
-                        ctx.shadowBlur = 12;
-                        ctx.shadowColor = '#ff4400';
+                        ctx.shadowBlur = 14;
+                        ctx.shadowColor = '#ff3d00';
                         ctx.stroke();
                     }
 
-                    // 불똥 헤드
+                    // 불똥 머리
                     ctx.beginPath();
                     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
                     ctx.fillStyle = '#ffffff';
-                    ctx.shadowBlur = 15;
+                    ctx.shadowBlur = 20;
                     ctx.shadowColor = this.color;
                     ctx.fill();
                     
@@ -449,21 +447,37 @@ if st.session_state.is_fever:
             }
 
             const sparks = [];
-            for (let i = 0; i < 90; i++) {
+            for (let i = 0; i < 110; i++) {
                 sparks.push(new ForgeSpark());
             }
 
             function animate() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                sparks.forEach(spark => {
-                    spark.update();
-                    spark.draw();
+                sparks.forEach(s => {
+                    s.update();
+                    s.draw();
                 });
                 requestAnimationFrame(animate);
             }
             animate();
         </script>
-    """, height=0)
+    """, height=1, scrolling=False)
+
+    # 파티클 캔버스 iframe을 화면 전체 고정Overlay 레이어로 격상시키는 추가 CSS injection
+    st.markdown("""
+        <style>
+        iframe[title="st.components.v1.html"] {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 999999 !important;
+            pointer-events: none !important;
+            border: none !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
 # ============================================================
 # 7. 클릭 창 & 카드 UI
@@ -630,8 +644,7 @@ st.markdown("---")
 with st.expander("ℹ️ COSMIC PREDICT 알고리즘 및 기술 사양"):
     st.markdown("""
     * **개발 언어 및 프레임워크:** Python 3.10+, Streamlit, HTML5 Canvas, JS Physics
-    * **핵심 기능:**
-      * 대장간 스파크 파티클 엔진: 피버타임 진입 시 중력 및 감쇄 물리 법칙을 반영한 90개 이상의 실시간 궤적 불똥(Spark Trail) 분출
-      * 피버타임 메커니즘: 60스택 달성 시 9초간 화면 불꽃 이펙트 및 스택 3배 보너스 부스트
-      * CSS Variables (`--team-glow`) 기반 10개 구단 고유 상징색 동적 렌더링
+    * **수정 반영 사항:**
+      * Streamlit Component iframe 레이어 탈출 CSS (`iframe[title="st.components.v1.html"]`) 주입으로 화면 전체 불똥 파티클 출력 완벽 보장
+      * `window.parent` 크기 동기화로 브라우저 전체 창 기준 불똥 분사 연출
     """)
